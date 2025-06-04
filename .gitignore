@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+res/
+res_log/
+res_monitoring/
+results/
+last_w_*.json
+weights_*.json
+limo_ros2/
+zmqRemoteApi/
+simu.ttt
+simu_ros_limo.ttt
