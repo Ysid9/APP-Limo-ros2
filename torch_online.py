@@ -3,6 +3,7 @@ import math
 import torch
 import numpy as np
 
+#delete potentially
 def theta_s(x, y):
     return math.tanh(10.*x)*math.atan(1.*y)
 
@@ -49,6 +50,9 @@ class PyTorchOnlineTrainer:
         network_input[0] = (position[0] - target[0]) * self.alpha[0]
         network_input[1] = (position[1] - target[1]) * self.alpha[1]
         network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
+
+        # alpha = math.atan2(target[1] - position[1], target[0] - position[0])
+        # network_input[2] = (position[2] - alpha) * self.alpha[2]
         
         # Boucle d'apprentissage
         while self.running:
@@ -75,6 +79,13 @@ class PyTorchOnlineTrainer:
                        alpha_y * alpha_y * (position[1] - target[1])**2 + 
                        alpha_teta * alpha_teta * (position[2] - target[2] - 
                                                  theta_s(position[0], position[1]))**2)
+
+            # alpha = math.atan2(target[1] - position[1], target[0] - position[0])
+            # crit_av = ((position[0] - target[0])**2 + 
+            #             (position[1] - target[1])**2 + 
+            #             (position[2] - target[2])**2 + 
+            #             (position[2] - alpha)**2)
+
             # Appliquer les commandes au robot
             self.robot.set_motor_velocity(command)
             
@@ -89,12 +100,27 @@ class PyTorchOnlineTrainer:
             network_input[1] = (position[1] - target[1]) * self.alpha[1]
             network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
             
+            # network_input[2] = (position[2] - alpha) * self.alpha[2]
+        
             # Calculer le critère après déplacement
             crit_ap = (alpha_x * alpha_x * (position[0] - target[0])**2 + 
                       alpha_y * alpha_y * (position[1] - target[1])**2 + 
                       alpha_teta * alpha_teta * (position[2] - target[2] - 
                                                 theta_s(position[0], position[1]))**2)
             
+            # crit_ap = ((position[0] - target[0])**2 + 
+            #         (position[1] - target[1])**2 + 
+            #         (position[2] - target[2])**2 + 
+            #         (position[2] - alpha)**2)
+            # Mettre à jour le moniteur (même si pas d'apprentissage)
+            if self.monitor:
+                self.monitor.update(
+                    position=position,
+                    wheel_speeds=command,
+                    gradient=[0, 0],
+                    cost=crit_av
+                )
+
             # Apprentissage (si activé)
             if self.training:
                 delta_t = (time.time() - debut)
@@ -109,6 +135,14 @@ class PyTorchOnlineTrainer:
                     +alpha_y*alpha_y*(position[1]-target[1])*delta_t*self.robot.r*math.sin(position[2])
                     +alpha_teta*alpha_teta*(position[2]-target[2]-theta_s(position[0], position[1]))*delta_t*self.robot.r/(2*self.robot.R))
                     ]
+
+                # grad = [
+                #         2 * delta_t * ((position[0] - target[0]) * math.cos(position[2])
+                #                     + (position[1] - target[1]) * math.sin(position[2])),
+
+                #         2 * delta_t * ((position[2] - target[2])
+                #                     + (position[2] - alpha))
+                #         ]
                 
                 # Mettre à jour le moniteur avec le gradient actuel
                 if self.monitor:
