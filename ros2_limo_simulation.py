@@ -73,7 +73,7 @@ class ROS2LimoSimulation:
         self.gain = GAIN
 
         # --- État interne ---
-        self._position      = [0,0,0]   # [x, y, theta]
+        self._position      = [2.5, 2.5, to_rad(45)]   # [x, y, theta]
         self._odom_received = False
         self._lock          = threading.Lock()
 
