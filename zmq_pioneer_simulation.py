@@ -110,13 +110,26 @@ class ZMQPioneerSimulation:
 
         Args:
             control(list): the control [left_motor, right_motor]
-            
+
         Returns:
             bool: True if successful, False otherwise
         """
-    
+
         self.sim.setJointTargetVelocity(self.left_motor, self.gain * control[0])
         self.sim.setJointTargetVelocity(self.right_motor, self.gain * control[1])
+
+    def set_cmd_vel(self, v_lin, v_ang):
+        """Convertit [v_linéaire, v_angulaire] en vitesses de roues Pioneer pour test en simulation.
+
+        Args:
+            v_lin (float): vitesse linéaire (m/s)
+            v_ang (float): vitesse angulaire (rad/s)
+        """
+        v_lin = max(-0.5, min(0.5, v_lin))
+        v_ang = max(-1.0, min(1.0, v_ang))
+        v_left  = (v_lin - v_ang * self.R) / self.r
+        v_right = (v_lin + v_ang * self.R) / self.r
+        self.set_motor_velocity([v_left, v_right])
     
 
     def cleanup(self):

@@ -42,13 +42,15 @@ class PyTorchOnlineTrainer:
         # Obtenir la position actuelle du robot
         position = self.robot.get_position()
 
-        # Calculer l'entrée du réseau : [err_x, err_y, cos(e_theta), sin(e_theta)]
-        e_theta = position[2] - target[2] - theta_s(position[0], position[1])
+        # Calculer l'entrée du réseau : [err_x, err_y, sin(e_theta), cos(e_theta)-1]
+        # atan2 recadre e_theta dans [-π, π] ; cos-1 assure l'attracteur naturel à la cible
+        e_theta = math.atan2(math.sin(position[2] - target[2] - theta_s(position[0], position[1])),
+                             math.cos(position[2] - target[2] - theta_s(position[0], position[1])))
         network_input = [
             (position[0] - target[0]) * self.alpha[0],
             (position[1] - target[1]) * self.alpha[1],
-            math.cos(e_theta),
             math.sin(e_theta),
+            math.cos(e_theta) - 1,
         ]
 
         # Boucle d'apprentissage
@@ -70,13 +72,14 @@ class PyTorchOnlineTrainer:
             alpha_y = 1/6
             alpha_teta = 1.0/(math.pi)
 
-            e_theta = position[2] - target[2] - theta_s(position[0], position[1])
+            e_theta = math.atan2(math.sin(position[2] - target[2] - theta_s(position[0], position[1])),
+                                 math.cos(position[2] - target[2] - theta_s(position[0], position[1])))
             crit_av = (alpha_x * alpha_x * (position[0] - target[0])**2 +
                        alpha_y * alpha_y * (position[1] - target[1])**2 +
                        alpha_teta * alpha_teta * e_theta**2)
 
             # Appliquer les commandes au robot
-            self.robot.set_motor_velocity(command)
+            self.robot.set_cmd_vel(command[0], command[1])
 
             # Attendre un court instant
             time.sleep(0.050)
@@ -85,12 +88,13 @@ class PyTorchOnlineTrainer:
             position = self.robot.get_position()
 
             # Mettre à jour l'entrée du réseau
-            e_theta = position[2] - target[2] - theta_s(position[0], position[1])
+            e_theta = math.atan2(math.sin(position[2] - target[2] - theta_s(position[0], position[1])),
+                                 math.cos(position[2] - target[2] - theta_s(position[0], position[1])))
             network_input = [
                 (position[0] - target[0]) * self.alpha[0],
                 (position[1] - target[1]) * self.alpha[1],
-                math.cos(e_theta),
                 math.sin(e_theta),
+                math.cos(e_theta) - 1,
             ]
 
             # Calculer le critère après déplacement
@@ -104,22 +108,19 @@ class PyTorchOnlineTrainer:
                     wheel_speeds=command,
                     gradient=[0, 0],
                     cost=crit_av,
-                    sincos=[network_input[2], network_input[3]]
+                    sincos=[math.sin(e_theta), math.cos(e_theta) - 1]
                 )
 
             # Apprentissage (si activé)
             if self.training:
                 delta_t = (time.time() - debut)
 
-                # Gradient du critère par rapport aux sorties du réseau (vitesses roues)
+                # Gradient du critère par rapport aux sorties [v_lin, v_ang]
                 grad = [
-                    (-2/delta_t)*(alpha_x*alpha_x*(position[0]-target[0])*delta_t*self.robot.r*math.cos(position[2])
-                    +alpha_y*alpha_y*(position[1]-target[1])*delta_t*self.robot.r*math.sin(position[2])
-                    -alpha_teta*alpha_teta*e_theta*delta_t*self.robot.r/(2*self.robot.R)),
+                    -2*(alpha_x*alpha_x*(position[0]-target[0])*math.cos(position[2])
+                       +alpha_y*alpha_y*(position[1]-target[1])*math.sin(position[2])),
 
-                    (-2/delta_t)*(alpha_x*alpha_x*(position[0]-target[0])*delta_t*self.robot.r*math.cos(position[2])
-                    +alpha_y*alpha_y*(position[1]-target[1])*delta_t*self.robot.r*math.sin(position[2])
-                    +alpha_teta*alpha_teta*e_theta*delta_t*self.robot.r/(2*self.robot.R))
+                    -2*alpha_teta*alpha_teta*e_theta
                 ]
 
                 if self.monitor:
@@ -128,14 +129,14 @@ class PyTorchOnlineTrainer:
                         wheel_speeds=command,
                         gradient=grad,
                         cost=crit_av,
-                        sincos=[network_input[2], network_input[3]]
+                        sincos=[math.sin(e_theta), math.cos(e_theta) - 1]
                     )
 
                 grad_tensor = torch.tensor(grad, dtype=torch.float32)
-                self.manual_backward(input_tensor, grad_tensor, 0.2, 0)
+                self.manual_backward(input_tensor, grad_tensor, 0.02, 0)
 
         # Arrêter le robot à la fin de l'apprentissage
-        self.robot.set_motor_velocity([0, 0])
+        self.robot.set_cmd_vel(0, 0)
         self.running = False
 
     def manual_backward(self, inputs, grad_tensor, learning_rate, momentum):
@@ -155,7 +156,7 @@ class PyTorchOnlineTrainer:
 
         # Rétropropager le gradient
         outputs.backward(gradient=-grad_tensor)
-
+        torch.nn.utils.clip_grad_norm_(self.network.parameters(), max_norm=1.0)
         # Mise à jour des poids
         for param in self.network.parameters():
             if param.grad is not None:
