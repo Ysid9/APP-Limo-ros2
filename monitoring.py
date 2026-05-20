@@ -39,7 +39,6 @@ class RobotMonitor:
         self.wheel_speeds = deque(maxlen=max_points)
         self.gradients = deque(maxlen=max_points)
         self.distances = deque(maxlen=max_points)
-        self.sincos = deque(maxlen=max_points)
         self.timestamps = deque(maxlen=max_points)
         self.target = [0, 0, 0]  # Position cible [x, y, theta]
         self.start_set = False  # Flag pour dessiner le point de départ une seule fois
@@ -55,9 +54,9 @@ class RobotMonitor:
         plt.ion()  # Mode interactif pour mise à jour en temps réel
         
         # Créer la figure principale avec GridSpec pour un meilleur contrôle
-        self.fig = plt.figure(figsize=(15, 13), facecolor='#f8f9fa')
+        self.fig = plt.figure(figsize=(15, 10), facecolor='#f8f9fa')
         self.fig.canvas.manager.set_window_title('Robot Pioneer - Monitoring en temps réel')
-        gs = GridSpec(4, 3, figure=self.fig)
+        gs = GridSpec(3, 3, figure=self.fig)
         
         # Graphique de la trajectoire (plus grand, occupe 2 lignes)
         self.ax_trajectory = self.fig.add_subplot(gs[0:2, 0:2])
@@ -130,19 +129,7 @@ class RobotMonitor:
         self.ax_distance_theta.grid(True, linestyle='--', alpha=0.7)
         self.distance_theta_line, = self.ax_distance_theta.plot([], [], 'b-', linewidth=2, label='Erreur θ')
         self.ax_distance_theta.legend(loc='upper right')
-
-        # Graphique cos(e_theta) et sin(e_theta)
-        self.ax_sincos = self.fig.add_subplot(gs[3, 0:3])
-        self.ax_sincos.set_title('Encodage sincos de l\'erreur angulaire', fontweight='bold')
-        self.ax_sincos.set_xlabel('Temps (s)')
-        self.ax_sincos.set_ylabel('Valeur')
-        self.ax_sincos.set_ylim(-1.1, 1.1)
-        self.ax_sincos.axhline(y=0, color='k', linestyle='-', alpha=0.3)
-        self.ax_sincos.grid(True, linestyle='--', alpha=0.7)
-        self.cos_line, = self.ax_sincos.plot([], [], 'b-', linewidth=2, label='cos(e_θ)')
-        self.sin_line, = self.ax_sincos.plot([], [], 'r-', linewidth=2, label='sin(e_θ)')
-        self.ax_sincos.legend(loc='upper right')
-
+        
         # Ajuster les espacements
         self.fig.tight_layout(pad=3.0)
         
@@ -174,8 +161,6 @@ class RobotMonitor:
                         self.gradients.append(data_point['gradient'])
                     if 'distances' in data_point:
                         self.distances.append(data_point['distances'])
-                    if 'sincos' in data_point:
-                        self.sincos.append(data_point['sincos'])
                     if 'timestamp' in data_point:
                         self.timestamps.append(data_point['timestamp'])
                     
@@ -283,15 +268,6 @@ class RobotMonitor:
                     margin_theta = max((max_err_theta - min_err_theta) * 0.1, 0.1)
                     self.ax_distance_theta.set_ylim(min_err_theta - margin_theta, max_err_theta + margin_theta)
         
-        # Mettre à jour le graphique cos/sin
-        if self.sincos:
-            cos_vals = [s[0] for s in self.sincos]
-            sin_vals = [s[1] for s in self.sincos]
-            self.cos_line.set_data(rel_time, cos_vals)
-            self.sin_line.set_data(rel_time, sin_vals)
-            if len(self.sincos) > 1:
-                self.ax_sincos.set_xlim(0, max(rel_time[-1], 1.0))
-
         # Ajuster la disposition pour s'assurer que tout est visible
         self.fig.canvas.flush_events()
     
@@ -309,7 +285,7 @@ class RobotMonitor:
             if self.fig:
                 plt.close(self.fig)
     
-    def add_data_point(self, position, wheel_speeds, gradient, cost, distances, sincos=None):
+    def add_data_point(self, position, wheel_speeds, gradient, cost, distances):
         """
         Ajoute un point de données au moniteur via la queue
         
@@ -330,8 +306,6 @@ class RobotMonitor:
                 'distances': distances,
                 'timestamp': time.time()
             }
-            if sincos is not None:
-                data['sincos'] = sincos
             self.data_queue.put(data)
     
     def set_target(self, target):
@@ -413,7 +387,7 @@ class RobotMonitorAdapter:
         self.last_target = target
         self.monitor.set_target(target)
     
-    def update(self, position, wheel_speeds, gradient=None, cost=None, add_noise=False, sincos=None):
+    def update(self, position, wheel_speeds, gradient=None, cost=None, add_noise=False):
         """
         Met à jour le moniteur avec les données actuelles
         
@@ -450,8 +424,7 @@ class RobotMonitorAdapter:
             wheel_speeds=wheel_speeds,
             gradient=gradient or [0, 0],
             cost=self.current_cost,
-            distances=distances,
-            sincos=sincos
+            distances=distances
         )
     
     def _calculate_cost(self, position, target):

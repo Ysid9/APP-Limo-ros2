@@ -3,50 +3,49 @@ import json
 import threading
 import atexit
 import time
-from zmq_pioneer_simulation import ZMQPioneerSimulation
+import rclpy
+from ros2_limo_interface import LimoROS2Interface
 from torch_back import PioneerNN
 from torch_online import PyTorchOnlineTrainer
-from monitoring import RobotMonitorAdapter
+try:
+    from monitoring import RobotMonitorAdapter
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
 
-# Définir les dimensions du monde pour le monitoring
-WORLD_BOUNDS = (-10, 10, -10, 10)  # x_min, x_max, y_min, y_max
+WORLD_BOUNDS = (-10, 10, -10, 10)
 
-# Initialize the robot with ZMQ Remote API
-robot = ZMQPioneerSimulation()
-monitor = RobotMonitorAdapter(world_bounds=WORLD_BOUNDS)
+rclpy.init()
+robot = LimoROS2Interface()
+monitor = RobotMonitorAdapter(world_bounds=WORLD_BOUNDS) if MONITORING_AVAILABLE else None
 trainer = None
 
-# Register cleanup function to ensure simulation is stopped
 def cleanup():
-    print("Cleaning up and stopping simulation...")
+    print("Cleaning up...")
     if trainer is not None:
         trainer.running = False
     if hasattr(robot, 'cleanup'):
         robot.cleanup()
     if hasattr(monitor, 'stop_monitoring'):
         monitor.stop_monitoring()
+    rclpy.shutdown()
 atexit.register(cleanup)
 
-# Wait a moment to ensure the simulation is fully started
-time.sleep(1)
-
-# Configuration de base  (par défaut pour la couche cachée.Peut etre modifié dans le module torch_back.py)
 HL_size = 1000
 input_size = 3
 output_size = 2
 
-# Création du réseau PyTorch
 network = PioneerNN(input_size, HL_size, output_size)
 
-# Ask for display preference
-display_choice = ''
-while display_choice.lower() not in ('y', 'n'):
-    display_choice = input('Enable real-time display? (y/n) --> ')
+display_choice = 'n'
+if MONITORING_AVAILABLE:
+    while display_choice.lower() not in ('y', 'n'):
+        display_choice = input('Enable real-time display? (y/n) --> ')
+    if display_choice.lower() == 'y':
+        monitor.start_monitoring()
+else:
+    print('Monitoring not available (matplotlib not installed).')
 
-if display_choice.lower() == 'y':
-    monitor.start_monitoring()
-
-# Chargement de poids existants
 choice = input('Do you want to load previous network? (y/n) --> ')
 if choice == 'y':
     try:
@@ -56,49 +55,39 @@ if choice == 'y':
         print("Weights loaded from last_w_torch_3in.json")
     except FileNotFoundError:
         print("No weight file found (last_w_torch_3in.json), starting with random weights.")
-    
 
-# Initialiser le trainer PyTorch avec monitoring
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 trainer = PyTorchOnlineTrainer(robot, network, monitor_instance)
 
 choice = ''
-while choice!='y' and choice !='n':
+while choice not in ('y', 'n'):
     choice = input('Do you want to learn? (y/n) --> ')
+trainer.training = (choice == 'y')
 
-trainer.training = (choice.lower() == 'y')
-
-# Demander la cible
 target_input = input("Enter the first target : x y radian --> ")
-target = target_input.split()
+target = [float(v) for v in target_input.split()]
 if len(target) != 3:
     raise ValueError("Need exactly 3 values")
-for i in range(len(target)):
-    target[i] = float(target[i])
 
-
-# Boucle principale d'entraînement
 continue_running = True
 session_count = 0
 
 while continue_running:
     session_count += 1
-    print(f"\n⚙️ Starting training session #{session_count}")
+    print(f"\nStarting session #{session_count}")
 
     thread = threading.Thread(target=trainer.train, args=(target,))
     trainer.running = True
     thread.start()
 
     try:
-        input("Press Enter to stop the current training")
+        input("Press Enter to stop the current session")
         trainer.running = False
-        
         thread.join(timeout=5)
         if thread.is_alive():
-            print("⚠️ Training thread did not finish in time, continuing anyway")
-            
+            print("Warning: training thread did not finish in time")
     except KeyboardInterrupt:
-        print("\nKeyboard interrupt detected. Stopping training...")
+        print("\nStopping...")
         trainer.running = False
         thread.join(timeout=5)
 
@@ -106,26 +95,24 @@ while continue_running:
         monitor.save_results(f"session_{session_count}_{time.strftime('%Y%m%d_%H%M%S')}")
 
     choice = ''
-    while choice.lower() not in ['y', 'n']:
+    while choice.lower() not in ('y', 'n'):
         choice = input("Do you want to continue? (y/n) --> ")
 
     if choice.lower() == 'y':
         choice_learning = ''
-        while choice_learning.lower() not in ['y', 'n']:
+        while choice_learning.lower() not in ('y', 'n'):
             choice_learning = input('Do you want to learn? (y/n) --> ')
-        
-        trainer.training = (choice_learning.lower() == 'y')
-        
-        target_input = input("Move the robot to the initial point and enter the new target : x y radian --> ")
-        target = [float(x) for x in target_input.split()]
+        trainer.training = (choice_learning == 'y')
+
+        target_input = input("Move robot to start position with teleop, then enter target : x y radian --> ")
+        target = [float(v) for v in target_input.split()]
         if len(target) != 3:
             raise ValueError("Need exactly 3 values")
-        
     else:
         continue_running = False
 
 save_choice = ''
-while save_choice.lower() not in ['y', 'n']:
+while save_choice.lower() not in ('y', 'n'):
     save_choice = input("Do you want to save the weights? (y/n) --> ")
 
 if save_choice.lower() == 'y':
@@ -138,7 +125,3 @@ else:
 
 if display_choice.lower() == 'y':
     monitor.save_results(f"final_results_{time.strftime('%Y%m%d_%H%M%S')}")
-else:
-    print("⚠️ No results saved, monitoring was disabled")
-
-

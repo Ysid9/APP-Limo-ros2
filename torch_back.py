@@ -7,44 +7,47 @@ import random
 
 class PioneerNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
+        hidden_size = 1000  # valeur modifiée pour la couche cachée.
         super(PioneerNN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
-
+        
         # Définir les couches
         self.hidden = nn.Linear(input_size, hidden_size)
         self.output = nn.Linear(hidden_size, output_size)
-
+        
         # Fonction d'activation (tanh comme dans l'implémentation originale)
         self.activation = nn.Tanh()
-	
-	# Initialisation Xavier : calibre la variance selon fan_in/fan_out
-        nn.init.xavier_uniform_(self.hidden.weight)
-        nn.init.xavier_uniform_(self.output.weight)
         
-       	#  Initialisation des poids avec une distribution uniforme [-1, 1]
+        # Initialisation des poids avec une distribution uniforme [-1, 1]
+        # comme dans l'implémentation originale
         #nn.init.uniform_(self.hidden.weight, -1.0, 1.0)
         #nn.init.uniform_(self.output.weight, -1.0, 1.0)
         
+        nn.init.xavier_uniform_(self.hidden.weight)
+        nn.init.xavier_uniform_(self.output.weight)
+        
         nn.init.zeros_(self.hidden.bias)
         nn.init.zeros_(self.output.bias)
-
+        
     def forward(self, x):
+        # Conversion en tensor PyTorch si nécessaire
         if not isinstance(x, torch.Tensor):
             x = torch.tensor(x, dtype=torch.float32)
-
+            
+        # Passage à travers les couches
         x = self.activation(self.hidden(x))
         x = self.activation(self.output(x))
         return x
-
+    
     def run_nn(self, inputs):
         """Méthode compatible avec l'interface originale"""
         with torch.no_grad():
             x = torch.tensor(inputs, dtype=torch.float32)
             outputs = self.forward(x)
             return outputs.tolist()
-
+    
     def load_weights_from_json(self, json_obj):
         """Charger les poids à partir d'un objet JSON (format original)"""
         meta_input  = json_obj.get("input_size")
@@ -70,7 +73,7 @@ class PioneerNN(nn.Module):
         with torch.no_grad():
             self.hidden.weight.copy_(input_weights.t())
             self.output.weight.copy_(output_weights.t())
-
+            
     def save_weights_to_json(self):
         """Convertir les poids en format JSON compatible avec l'original"""
         input_weights = []
