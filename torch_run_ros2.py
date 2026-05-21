@@ -1,5 +1,6 @@
-import torch
 import json
+import os
+import subprocess
 import threading
 import atexit
 import time
@@ -7,16 +8,29 @@ import rclpy
 from ros2_limo_interface import LimoROS2Interface
 from torch_back import PioneerNN
 from torch_online import PyTorchOnlineTrainer
+from data_logger import DataLogger
 try:
     from monitoring import RobotMonitorAdapter
     MONITORING_AVAILABLE = True
-except ImportError:
+except Exception:
     MONITORING_AVAILABLE = False
 
 WORLD_BOUNDS = (-10, 10, -10, 10)
+PC_USER = 'cerv'
+PC_IP   = '192.168.1.241'
+PC_DEST = '/home/cerv/Downloads/APP-Limo_ros2_curr/res/'
 
 rclpy.init()
-robot = LimoROS2Interface()
+real_robot = ''
+while real_robot.lower() not in ('y', 'n'):
+    real_robot = input('Real robot? (y/n) --> ')
+is_real_robot = (real_robot.lower() == 'y')
+subdir = 'robot' if is_real_robot else 'gazebo'
+run_stamp = time.strftime('%Y%m%d_%H%M%S')
+run_dir = os.path.join('res', subdir, f'run_{run_stamp}')
+os.makedirs(run_dir, exist_ok=True)
+
+robot = LimoROS2Interface(safety_limits=is_real_robot)
 monitor = RobotMonitorAdapter(world_bounds=WORLD_BOUNDS) if MONITORING_AVAILABLE else None
 trainer = None
 
@@ -26,28 +40,32 @@ def cleanup():
         trainer.running = False
     if hasattr(robot, 'cleanup'):
         robot.cleanup()
-    if hasattr(monitor, 'stop_monitoring'):
+    if monitor is not None:
         monitor.stop_monitoring()
     rclpy.shutdown()
 atexit.register(cleanup)
 
 HL_size = 1000
+LEARNING_RATE = 0.05
 input_size = 3
 output_size = 2
 
 network = PioneerNN(input_size, HL_size, output_size)
 
-display_choice = 'n'
+display_choice = ''
 if MONITORING_AVAILABLE:
     while display_choice.lower() not in ('y', 'n'):
         display_choice = input('Enable real-time display? (y/n) --> ')
     if display_choice.lower() == 'y':
         monitor.start_monitoring()
 else:
+    display_choice = 'n'
     print('Monitoring not available (matplotlib not installed).')
 
-choice = input('Do you want to load previous network? (y/n) --> ')
-if choice == 'y':
+choice = ''
+while choice.lower() not in ('y', 'n'):
+    choice = input('Do you want to load previous network? (y/n) --> ')
+if choice.lower() == 'y':
     try:
         with open('last_w_torch_3in.json') as fp:
             json_obj = json.load(fp)
@@ -57,17 +75,18 @@ if choice == 'y':
         print("No weight file found (last_w_torch_3in.json), starting with random weights.")
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
-trainer = PyTorchOnlineTrainer(robot, network, monitor_instance)
+logger = DataLogger()
+run_logger = DataLogger()
+trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger, learning_rate=LEARNING_RATE)
 
 choice = ''
 while choice not in ('y', 'n'):
     choice = input('Do you want to learn? (y/n) --> ')
 trainer.training = (choice == 'y')
 
-target_input = input("Enter the first target : x y radian --> ")
-target = [float(v) for v in target_input.split()]
-if len(target) != 3:
-    raise ValueError("Need exactly 3 values")
+target = []
+while len(target) != 3:
+    target = [float(v) for v in input("Enter the first target : x y radian --> ").split()]
 
 continue_running = True
 session_count = 0
@@ -91,8 +110,13 @@ while continue_running:
         trainer.running = False
         thread.join(timeout=5)
 
-    if display_choice.lower() == 'y':
-        monitor.save_results(f"session_{session_count}_{time.strftime('%Y%m%d_%H%M%S')}")
+    mode = "training" if trainer.training else "eval"
+    stamp = f"session_{session_count}_{time.strftime('%Y%m%d_%H%M%S')}"
+    csv_path = os.path.join(run_dir, f"{mode}_{stamp}.csv")
+    logger.save(csv_path)
+    logger.save_plot(csv_path.replace('.csv', '.png'))
+    run_logger.extend(logger, session=session_count)
+    logger.reset()
 
     choice = ''
     while choice.lower() not in ('y', 'n'):
@@ -104,12 +128,15 @@ while continue_running:
             choice_learning = input('Do you want to learn? (y/n) --> ')
         trainer.training = (choice_learning == 'y')
 
-        target_input = input("Move robot to start position with teleop, then enter target : x y radian --> ")
-        target = [float(v) for v in target_input.split()]
-        if len(target) != 3:
-            raise ValueError("Need exactly 3 values")
+        target = []
+        while len(target) != 3:
+            target = [float(v) for v in input("Move robot to start position, then enter target : x y radian --> ").split()]
     else:
         continue_running = False
+
+run_total_path = os.path.join(run_dir, 'run_total.csv')
+run_logger.save(run_total_path)
+run_logger.save_plot(run_total_path.replace('.csv', '.png'))
 
 save_choice = ''
 while save_choice.lower() not in ('y', 'n'):
@@ -124,4 +151,20 @@ else:
     print("Weights not saved.")
 
 if display_choice.lower() == 'y':
-    monitor.save_results(f"final_results_{time.strftime('%Y%m%d_%H%M%S')}")
+    mode = "training" if trainer.training else "eval"
+    monitor.save_results(f"{mode}_final_{time.strftime('%Y%m%d_%H%M%S')}",
+                         results_dir=run_dir,
+                         final=True)
+
+if is_real_robot:
+    send_choice = ''
+    while send_choice.lower() not in ('y', 'n'):
+        send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
+    if send_choice.lower() == 'y':
+        dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
+        print(f"Sending {run_dir} → {dest}")
+        result = subprocess.run(['scp', '-r', run_dir, dest])
+        if result.returncode == 0:
+            print("Transfer complete.")
+        else:
+            print("Transfer failed — check SSH/SCP access to the PC.")

@@ -1,13 +1,9 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-import math
-import random
 
 class PioneerNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
-        hidden_size = 1000  # valeur modifiée pour la couche cachée.
+        # hidden_size = 1000  # décommenter et ajuster ici pour forcer une taille fixe
         super(PioneerNN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -20,11 +16,6 @@ class PioneerNN(nn.Module):
         # Fonction d'activation (tanh comme dans l'implémentation originale)
         self.activation = nn.Tanh()
         
-        # Initialisation des poids avec une distribution uniforme [-1, 1]
-        # comme dans l'implémentation originale
-        #nn.init.uniform_(self.hidden.weight, -1.0, 1.0)
-        #nn.init.uniform_(self.output.weight, -1.0, 1.0)
-        
         nn.init.xavier_uniform_(self.hidden.weight)
         nn.init.xavier_uniform_(self.output.weight)
         
@@ -32,21 +23,9 @@ class PioneerNN(nn.Module):
         nn.init.zeros_(self.output.bias)
         
     def forward(self, x):
-        # Conversion en tensor PyTorch si nécessaire
-        if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=torch.float32)
-            
-        # Passage à travers les couches
         x = self.activation(self.hidden(x))
         x = self.activation(self.output(x))
         return x
-    
-    def run_nn(self, inputs):
-        """Méthode compatible avec l'interface originale"""
-        with torch.no_grad():
-            x = torch.tensor(inputs, dtype=torch.float32)
-            outputs = self.forward(x)
-            return outputs.tolist()
     
     def load_weights_from_json(self, json_obj):
         """Charger les poids à partir d'un objet JSON (format original)"""
