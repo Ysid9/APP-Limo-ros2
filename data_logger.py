@@ -75,6 +75,7 @@ class DataLogger:
         t  = [r['timestamp']     for r in self._rows]
         x  = [r['x']             for r in self._rows]
         y  = [r['y']             for r in self._rows]
+        th = [r['theta']         for r in self._rows]
         ex = [r['e_x']           for r in self._rows]
         ey = [r['e_y']           for r in self._rows]
         et = [r['e_theta']       for r in self._rows]
@@ -117,6 +118,10 @@ class DataLogger:
         ax6.plot(t, g0, label='grad v_lin'); ax6.plot(t, g1, label='grad v_ang')
         ax6.set_title('Gradient'); ax6.set_xlabel('t (s)'); ax6.legend(); ax6.grid(True)
 
+        ax7 = fig.add_subplot(gs[2, 2])
+        ax7.plot(t, x, label='x'); ax7.plot(t, y, label='y'); ax7.plot(t, th, label='θ')
+        ax7.set_title('Position'); ax7.set_xlabel('t (s)'); ax7.legend(); ax7.grid(True)
+
         fig.tight_layout()
         os.makedirs(os.path.dirname(png_path) if os.path.dirname(png_path) else '.', exist_ok=True)
         fig.savefig(png_path, dpi=150, bbox_inches='tight')
@@ -124,17 +129,6 @@ class DataLogger:
             plt.show()
         plt.close(fig)
         print(f"Plot saved to {png_path}")
-
-    def extend(self, other, session=None):
-        if not other._rows:
-            return
-        offset = self._rows[-1]['timestamp'] if self._rows else 0.0
-        for row in other._rows:
-            new_row = dict(row)
-            new_row['timestamp'] = round(row['timestamp'] + offset, 4)
-            if session is not None:
-                new_row['session'] = session
-            self._rows.append(new_row)
 
     def reset(self):
         self._start_time = None

@@ -16,7 +16,7 @@ monitoring.py, data_logger.py) sont communs aux deux.
 
 1. Installer Python 3.10+
    https://www.python.org/downloads/windows/
-   ⚠ Cocher "Add Python to PATH" lors de l'installation.
+   Cocher "Add Python to PATH" lors de l'installation.
 
    Vérifier dans PowerShell :
      python --version
@@ -78,7 +78,7 @@ monitoring.py, data_logger.py) sont communs aux deux.
 2. Installer les dépendances Python
      pip install torch matplotlib PyQt5
 
-3. Créer le workspace ROS2 et y placer le modèle Limo
+3. Créer le workspace ROS2 et y compiler le modèle Limo
 
      mkdir -p ~/ros2_ws/src
      cp -r /chemin/vers/APP-Limo_ros2_3in/limo_ros2 ~/ros2_ws/src/
@@ -93,39 +93,46 @@ monitoring.py, data_logger.py) sont communs aux deux.
      echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
      source ~/.bashrc
 
-4. Lancer Gazebo (Terminal 1)
+4. Lancer Gazebo — mode différentiel 4WD (Terminal 1)
+
      ros2 launch limo_description gazebo_models_diff.launch.py
 
    Le robot Limo apparaît à la position (0, 0, 0) dans Gazebo.
-   Deplacer le robot à la position initiale voulu.
+   Déplacer le robot à la position initiale voulue avant de lancer le script.
 
 5. Lancer le script (Terminal 2)
+
      cd /chemin/vers/APP-Limo_ros2_3in
+     source /opt/ros/humble/setup.bash
+     source ~/ros2_ws/install/setup.bash
      python3 torch_run_ros2.py
 
    Répondre aux prompts :
-     - Real robot? → n (simulation Gazebo) (y pour robot limo réel)
+     - Real robot? → n (simulation Gazebo) / y (robot Limo réel)
      - Enable real-time display? → y pour le monitoring, n sinon
      - Do you want to load previous network? → y pour charger last_w_torch_3in.json
      - Do you want to learn? → y pour activer le backprop, n pour évaluation seule
-     - Enter the first target : x y radian → 0 0 0 (toujours)
+     - Enter the first target : x y radian → 0 0 0 (cible toujours à l'origine)
 
    Le robot converge vers la cible.
    Appuyer sur Entrée pour stopper la session.
    Entre chaque session, déplacer le robot manuellement dans Gazebo.
    À la fin, les résultats sont dans res/gazebo/run_YYYYMMDD_HHMMSS/.
 
-6. Visualiser les résultats .csv enregistrés si graphe manquants
-     python3 plot_results.py
-   (cherche automatiquement dans res/ et génère les graphes manquants)
+6. Visualiser les résultats .csv enregistrés si graphes manquants
+
+     python3 plot_results.py res/gazebo/run_*/session_*.csv
+
+   Exemple pour un seul fichier :
+     python3 plot_results.py res/gazebo/run_20250601_143022/training_session_1_20250601_143045.csv
 
 
 ======================================================
   PARAMETRES MODIFIABLES (torch_run_ros2.py)
 ======================================================
 
-  HL_size      = 1000   # taille de la couche cachée du réseau
-  LEARNING_RATE = 0.2   # pas d'apprentissage
+  HL_size       = 1000   # taille de la couche cachée du réseau
+  LEARNING_RATE = 0.2    # pas d'apprentissage
 
 
 ======================================================

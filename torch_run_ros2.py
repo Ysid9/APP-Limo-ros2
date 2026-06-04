@@ -46,7 +46,7 @@ def cleanup():
 atexit.register(cleanup)
 
 HL_size = 1000
-LEARNING_RATE = 0.05
+LEARNING_RATE = 0.2
 input_size = 3
 output_size = 2
 
@@ -76,7 +76,6 @@ if choice.lower() == 'y':
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger = DataLogger()
-run_logger = DataLogger()
 trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger, learning_rate=LEARNING_RATE)
 
 choice = ''
@@ -115,7 +114,6 @@ while continue_running:
     csv_path = os.path.join(run_dir, f"{mode}_{stamp}.csv")
     logger.save(csv_path)
     logger.save_plot(csv_path.replace('.csv', '.png'))
-    run_logger.extend(logger, session=session_count)
     logger.reset()
 
     choice = ''
@@ -133,10 +131,6 @@ while continue_running:
             target = [float(v) for v in input("Move robot to start position, then enter target : x y radian --> ").split()]
     else:
         continue_running = False
-
-run_total_path = os.path.join(run_dir, 'run_total.csv')
-run_logger.save(run_total_path)
-run_logger.save_plot(run_total_path.replace('.csv', '.png'))
 
 save_choice = ''
 while save_choice.lower() not in ('y', 'n'):
@@ -156,15 +150,14 @@ if display_choice.lower() == 'y':
                          results_dir=run_dir,
                          final=True)
 
-if is_real_robot:
-    send_choice = ''
-    while send_choice.lower() not in ('y', 'n'):
-        send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
-    if send_choice.lower() == 'y':
-        dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
-        print(f"Sending {run_dir} → {dest}")
-        result = subprocess.run(['scp', '-r', run_dir, dest])
-        if result.returncode == 0:
-            print("Transfer complete.")
-        else:
-            print("Transfer failed — check SSH/SCP access to the PC.")
+send_choice = ''
+while send_choice.lower() not in ('y', 'n'):
+    send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
+if send_choice.lower() == 'y':
+    dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
+    print(f"Sending {run_dir} → {dest}")
+    result = subprocess.run(['scp', '-r', run_dir, dest])
+    if result.returncode == 0:
+        print("Transfer complete.")
+    else:
+        print("Transfer failed — check SSH/SCP access to the PC.")
