@@ -47,6 +47,8 @@ atexit.register(cleanup)
 
 HL_size = 1000
 LEARNING_RATE = 0.2
+TOLERANCE_COST = 0.0001   # arrêt si J < seuil pendant TOLERANCE_TIME s (None = désactivé)
+TOLERANCE_TIME = 2.0      # secondes
 input_size = 3
 output_size = 2
 
@@ -76,7 +78,10 @@ if choice.lower() == 'y':
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger = DataLogger()
-trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger, learning_rate=LEARNING_RATE)
+trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger,
+                              learning_rate=LEARNING_RATE,
+                              tolerance_cost=TOLERANCE_COST,
+                              tolerance_time=TOLERANCE_TIME)
 
 choice = ''
 while choice not in ('y', 'n'):
