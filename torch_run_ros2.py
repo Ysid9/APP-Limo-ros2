@@ -150,14 +150,15 @@ if display_choice.lower() == 'y':
                          results_dir=run_dir,
                          final=True)
 
-send_choice = ''
-while send_choice.lower() not in ('y', 'n'):
-    send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
-if send_choice.lower() == 'y':
-    dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
-    print(f"Sending {run_dir} → {dest}")
-    result = subprocess.run(['scp', '-r', run_dir, dest])
-    if result.returncode == 0:
-        print("Transfer complete.")
-    else:
-        print("Transfer failed — check SSH/SCP access to the PC.")
+if is_real_robot:
+    send_choice = ''
+    while send_choice.lower() not in ('y', 'n'):
+        send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
+    if send_choice.lower() == 'y':
+        dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
+        print(f"Sending {run_dir} → {dest}")
+        result = subprocess.run(['scp', '-r', run_dir, dest])
+        if result.returncode == 0:
+            print("Transfer complete.")
+        else:
+            print("Transfer failed — check SSH/SCP access to the PC.")
