@@ -44,7 +44,8 @@ class PyTorchOnlineTrainer:
         network_input[1] = (position[1] - target[1]) * self.alpha[1]
         network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
         
-        _below_since = None
+        _zone_entry_time = None
+        _zone_min = float('inf')
 
         while self.running:
             input_tensor = torch.tensor(network_input, dtype=torch.float32)
@@ -95,14 +96,18 @@ class PyTorchOnlineTrainer:
 
             if self.tolerance_cost is not None:
                 if crit_av < self.tolerance_cost:
-                    if _below_since is None:
-                        _below_since = time.time()
-                    elif time.time() - _below_since >= self.tolerance_time:
-                        print(f"Convergence — coût {crit_av:.6f} < {self.tolerance_cost} "
-                              f"pendant {self.tolerance_time}s, arrêt de la session.")
+                    now = time.time()
+                    if _zone_entry_time is None:
+                        _zone_entry_time = now
+                    _zone_min = min(_zone_min, crit_av)
+                    elapsed = now - _zone_entry_time
+                    if elapsed >= self.tolerance_time and crit_av <= _zone_min * 1.20:
+                        print(f"Convergence — coût {crit_av:.6f} "
+                              f"(min session : {_zone_min:.6f}) après {elapsed:.1f}s, arrêt.")
                         self.running = False
                 else:
-                    _below_since = None
+                    _zone_entry_time = None
+                    _zone_min = float('inf')
 
         self.robot.set_cmd_vel(0, 0)
     
