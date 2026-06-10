@@ -20,8 +20,6 @@ except ImportError:
 def to_rad(deg):
     return 2*math.pi*deg/360
 
-def to_deg(rad):
-    return rad*360/(2*math.pi)
 
 class ZMQPioneerSimulation:
     def __init__(self):
