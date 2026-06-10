@@ -47,8 +47,8 @@ atexit.register(cleanup)
 
 HL_size = 1000
 LEARNING_RATE = 0.2
-TOLERANCE_COST = 0.0001   # arrêt si J < seuil pendant TOLERANCE_TIME s (None = désactivé)
-TOLERANCE_TIME = 2.0      # secondes
+TOLERANCE_COST = 0.005   # arrêt si J < seuil pendant TOLERANCE_TIME s (None = désactivé)
+TOLERANCE_TIME = 8.0      # secondes
 input_size = 3
 output_size = 2
 
