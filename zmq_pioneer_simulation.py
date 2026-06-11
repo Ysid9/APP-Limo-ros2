@@ -28,8 +28,8 @@ class ZMQPioneerSimulation:
         # Use that to create an absolute path to the scene file
         self.scene_path = os.path.join(current_dir, 'simu.ttt')
         
-        self.gain = 2
-        self.initial_position = [2.5, 2.5, to_rad(45)]
+        self.gain = 1
+        self.initial_position = [2.5, 2.5, to_rad(20)]
 
         self.r = 0.096  # wheel radius
         self.R = 0.267  # demi-distance entre les roues
