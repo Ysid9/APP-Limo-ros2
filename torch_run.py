@@ -17,21 +17,20 @@ monitor = RobotMonitorAdapter(world_bounds=WORLD_BOUNDS)
 trainer = None
 
 def cleanup():
-    print("Cleaning up...")
+    print("Cleaning up and stopping simulation...")
     if trainer is not None:
         trainer.running = False
     if hasattr(robot, 'cleanup'):
         robot.cleanup()
-    if monitor is not None:
+    if hasattr(monitor, 'stop_monitoring'):
         monitor.stop_monitoring()
 atexit.register(cleanup)
 
 time.sleep(1)
 
-HL_size       = 1000
-LEARNING_RATE = 0.2
-input_size    = 3
-output_size   = 2
+HL_size    = 10
+input_size = 3
+output_size = 2
 
 run_stamp = time.strftime('%Y%m%d_%H%M%S')
 run_dir   = os.path.join('res', f'run_{run_stamp}')
@@ -59,8 +58,7 @@ if choice.lower() == 'y':
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger  = DataLogger()
-trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger,
-                               learning_rate=LEARNING_RATE)
+trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger)
 
 choice = ''
 while choice not in ('y', 'n'):
@@ -87,9 +85,9 @@ while continue_running:
         trainer.running = False
         thread.join(timeout=5)
         if thread.is_alive():
-            print("Warning: training thread did not finish in time")
+            print("Warning: training thread did not finish in time, continuing anyway")
     except KeyboardInterrupt:
-        print("\nStopping...")
+        print("\nKeyboard interrupt detected. Stopping...")
         trainer.running = False
         thread.join(timeout=5)
 
@@ -115,7 +113,7 @@ while continue_running:
 
         target = []
         while len(target) != 3:
-            target = [float(v) for v in input("Move robot to start position, then enter target : x y radian --> ").split()]
+            target = [float(v) for v in input("Move the robot to the initial point and enter the new target : x y radian --> ").split()]
     else:
         continue_running = False
 

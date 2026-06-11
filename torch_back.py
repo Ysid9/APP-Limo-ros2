@@ -66,9 +66,9 @@ class PioneerNN(nn.Module):
             output_weights.append(row)
 
         return {
-            "input_size":    self.input_size,
-            "hidden_size":   self.hidden_size,
-            "output_size":   self.output_size,
-            "input_weights": input_weights,
+            "input_size":     self.input_size,
+            "hidden_size":    self.hidden_size,
+            "output_size":    self.output_size,
+            "input_weights":  input_weights,
             "output_weights": output_weights,
         }
