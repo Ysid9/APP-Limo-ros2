@@ -76,6 +76,9 @@ Fichiers du projet :
         Do you want to learn?                 --> y (apprentissage) ou n
         Enter the first target : x y radian  --> ex: 0 0 0
 
+   d. Entre chaque session, déplacez manuellement le robot à sa position de départ
+      dans CoppeliaSim avant de répondre "y" à "Do you want to continue?".
+
 
 6. Résultats
 
