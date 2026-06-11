@@ -123,3 +123,65 @@ class DataLogger:
     def reset(self):
         self._start_time = None
         self._rows = []
+
+    @classmethod
+    def save_run_summary(cls, session_csv_paths, out_dir):
+        """Génère à la fin du run : CSV total, PNG total, PNG trajectoires multi-sessions."""
+        if not session_csv_paths:
+            return
+
+        try:
+            import matplotlib
+            import matplotlib.pyplot as plt
+        except Exception:
+            print("matplotlib not available — skipping run summary plots")
+            return
+
+        session_loggers = [cls.from_csv(p) for p in session_csv_paths]
+
+        # CSV total (toutes sessions concaténées)
+        total_rows = []
+        for idx, dl in enumerate(session_loggers):
+            for row in dl._rows:
+                total_rows.append({'session': idx + 1, **row})
+
+        if total_rows:
+            total_csv = os.path.join(out_dir, 'run_total.csv')
+            os.makedirs(out_dir, exist_ok=True)
+            with open(total_csv, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=total_rows[0].keys())
+                writer.writeheader()
+                writer.writerows(total_rows)
+            print(f"Combined CSV saved to {total_csv} ({len(total_rows)} iterations)")
+
+            # PNG total (toutes données combinées)
+            combined = cls()
+            combined._rows = [row for dl in session_loggers for row in dl._rows]
+            combined.save_plot(os.path.join(out_dir, 'run_total.png'))
+
+        # PNG trajectoires : une couleur par session
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.set_title('Trajectoires — toutes sessions', fontweight='bold')
+        ax.set_xlabel('x (m)'); ax.set_ylabel('y (m)')
+        ax.grid(True, linestyle='--', alpha=0.7)
+        ax.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+        ax.axvline(x=0, color='k', linestyle='-', alpha=0.3)
+
+        colors = plt.cm.tab10.colors
+        for i, dl in enumerate(session_loggers):
+            if not dl._rows:
+                continue
+            color = colors[i % len(colors)]
+            x = [r['x'] for r in dl._rows]
+            y = [r['y'] for r in dl._rows]
+            ax.plot(x, y, '-', color=color, linewidth=1.5, label=f'Session {i + 1}')
+            ax.plot(x[0], y[0], '^', color=color, markersize=10)
+
+        ax.plot(0, 0, 'r*', markersize=15, label='Cible', zorder=5)
+        ax.legend(loc='upper right')
+        ax.set_aspect('equal', adjustable='datalim')
+        fig.tight_layout()
+        traj_path = os.path.join(out_dir, 'run_trajectoires.png')
+        fig.savefig(traj_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        print(f"Trajectory plot saved to {traj_path}")

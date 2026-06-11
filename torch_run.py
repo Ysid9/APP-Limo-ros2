@@ -28,7 +28,7 @@ atexit.register(cleanup)
 
 time.sleep(1)
 
-HL_size    = 10
+HL_size    = 1000
 input_size = 3
 output_size = 2
 
@@ -69,8 +69,9 @@ target = []
 while len(target) != 3:
     target = [float(v) for v in input("Enter the first target : x y radian --> ").split()]
 
-continue_running = True
-session_count    = 0
+continue_running   = True
+session_count      = 0
+session_csv_paths  = []
 
 while continue_running:
     session_count += 1
@@ -97,9 +98,7 @@ while continue_running:
     logger.save(csv_path)
     logger.save_plot(csv_path.replace('.csv', '.png'))
     logger.reset()
-
-    if display_choice.lower() == 'y':
-        monitor.save_results(f"{mode}_{stamp}", results_dir=run_dir)
+    session_csv_paths.append(csv_path)
 
     choice = ''
     while choice.lower() not in ('y', 'n'):
@@ -117,6 +116,9 @@ while continue_running:
     else:
         continue_running = False
 
+# Résumé de fin de run : CSV total + PNG total + PNG trajectoires
+DataLogger.save_run_summary(session_csv_paths, run_dir)
+
 save_choice = ''
 while save_choice.lower() not in ('y', 'n'):
     save_choice = input("Do you want to save the weights? (y/n) --> ")
@@ -128,8 +130,3 @@ if save_choice.lower() == 'y':
     print("Weights saved to last_w_torch_3in.json")
 else:
     print("Weights not saved.")
-
-if display_choice.lower() == 'y':
-    mode = "training" if trainer.training else "eval"
-    monitor.save_results(f"{mode}_final_{time.strftime('%Y%m%d_%H%M%S')}",
-                         results_dir=run_dir, final=True)

@@ -81,14 +81,6 @@ class PyTorchOnlineTrainer:
                      +alpha_teta*alpha_teta*(position[2]-target[2]-theta_s(position[0], position[1]))*delta_t*self.robot.r/(2*self.robot.R))
                 ]
 
-                if self.monitor:
-                    self.monitor.update(
-                        position=position,
-                        wheel_speeds=command,
-                        gradient=grad,
-                        cost=crit_av
-                    )
-
                 if crit_ap <= crit_av:
                     self.optimizer.zero_grad()
                     grad_tensor = torch.tensor(grad, dtype=torch.float32)
@@ -97,6 +89,14 @@ class PyTorchOnlineTrainer:
                     self.optimizer.zero_grad()
                     grad_tensor = torch.tensor(grad, dtype=torch.float32)
                     self.manual_backward(input_tensor, grad_tensor, 0.2, 0)
+
+            if self.monitor:
+                self.monitor.update(
+                    position=position,
+                    wheel_speeds=command,
+                    gradient=grad,
+                    cost=crit_av
+                )
 
             if self.logger:
                 self.logger.log(position, target, command, grad, crit_av)
