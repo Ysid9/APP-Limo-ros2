@@ -1,4 +1,5 @@
-Instructions d'installation — coppelia_pioneer (Windows, CoppeliaSim)
+Instructions d'installation — coppelia_pioneer
+Compatible Windows, Linux et macOS
 
 Fichiers du projet :
   torch_run.py               -- script principal
@@ -12,18 +13,27 @@ Fichiers du projet :
 
 1. Installer Python 3.8+
 
-   Téléchargez Python (>= 3.8) depuis https://www.python.org/downloads/windows/
-   Cochez "Add Python to PATH" lors de l'installation.
+   Windows  : https://www.python.org/downloads/windows/
+              Cochez "Add Python to PATH" lors de l'installation.
+   Linux    : sudo apt install python3 python3-pip
+   macOS    : https://www.python.org/downloads/macos/
+              ou : brew install python
 
-   Vérification dans PowerShell :
-     python --version
+   Vérification :
+     python --version        (Windows)
+     python3 --version       (Linux / macOS)
 
 
 2. Installer les dépendances Python
 
-   Dans PowerShell :
-     python -m pip install --upgrade pip
+   Windows :
      pip install torch matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
+
+   Linux / macOS :
+     pip3 install torch matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
+
+   Note Linux : si PyQt5 pose problème via pip, installer via le gestionnaire de paquets :
+     sudo apt install python3-pyqt5
 
      torch                            : PyTorch
      matplotlib + PyQt5               : graphiques et affichage temps réel
@@ -31,28 +41,34 @@ Fichiers du projet :
      coppeliasim-zmqremoteapi-client  : client Python pour CoppeliaSim
 
 
-3. Installer CoppeliaSim (Windows)
+3. Installer CoppeliaSim
 
-   Téléchargez depuis https://www.coppeliarobotics.com/downloads
-   Décompressez dans C:\CoppeliaSim (ou autre emplacement).
+   Téléchargez la version correspondant à votre OS depuis :
+     https://www.coppeliarobotics.com/downloads
 
-   Au démarrage de CoppeliaSim, vérifiez dans la console :
+   Au démarrage, vérifiez dans la console CoppeliaSim :
      [ZMQ remote API server@addOnScript] ZeroMQ Remote API server starting (rpcPort=23000)...
 
 
 4. Préparer le projet
 
-   Copiez le dossier du projet dans un emplacement Windows, par exemple :
-     C:\Users\VotreNom\Documents\coppelia_pioneer
+   Copiez le dossier du projet dans un emplacement de votre choix, par exemple :
+     Windows : C:\Users\VotreNom\Documents\coppelia_pioneer
+     Linux   : ~/Documents/coppelia_pioneer
+     macOS   : ~/Documents/coppelia_pioneer
 
 
 5. Lancer
 
    a. Ouvrez CoppeliaSim, chargez simu.ttt (File > Open Scene), cliquez Play (▶).
 
-   b. Dans PowerShell :
-        cd C:\Users\VotreNom\Documents\coppelia_pioneer
-        python torch_run.py
+   b. Dans un terminal, placez-vous dans le dossier du projet :
+
+        cd /chemin/vers/coppelia_pioneer
+
+      Puis lancez :
+        python torch_run.py     (Windows)
+        python3 torch_run.py    (Linux / macOS)
 
    c. Répondez aux prompts :
         Enable real-time display?             --> y (monitoring) ou n
