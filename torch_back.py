@@ -13,8 +13,8 @@ class PioneerNN(nn.Module):
         self.output = nn.Linear(hidden_size, output_size)
         self.activation = nn.Tanh()
 
-        nn.init.uniform_(self.hidden.weight, -1.0, 1.0)
-        nn.init.uniform_(self.output.weight, -1.0, 1.0)
+        nn.init.xavier_uniform_(self.hidden.weight)
+        nn.init.xavier_uniform_(self.output.weight)
         nn.init.zeros_(self.hidden.bias)
         nn.init.zeros_(self.output.bias)
 
