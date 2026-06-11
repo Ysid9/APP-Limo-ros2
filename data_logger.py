@@ -81,9 +81,9 @@ class DataLogger:
         g1  = [r['grad_1']    for r in self._rows]
         co  = [r['cost']      for r in self._rows]
 
-        fig = plt.figure(figsize=(16, 10))
+        fig = plt.figure(figsize=(16, 7))
         fig.suptitle(os.path.basename(png_path), fontsize=11)
-        gs = GridSpec(3, 3, figure=fig)
+        gs = GridSpec(2, 3, figure=fig)
 
         ax = fig.add_subplot(gs[0:2, 0])
         ax.plot(x, y, 'b-', linewidth=1)
@@ -107,10 +107,6 @@ class DataLogger:
         ax5 = fig.add_subplot(gs[1, 2])
         ax5.plot(t, g0, label='grad gauche'); ax5.plot(t, g1, label='grad droite')
         ax5.set_title('Gradient'); ax5.set_xlabel('t (s)'); ax5.legend(); ax5.grid(True)
-
-        ax6 = fig.add_subplot(gs[2, 1])
-        ax6.plot(t, x, label='x'); ax6.plot(t, y, label='y'); ax6.plot(t, th, label='θ')
-        ax6.set_title('Position'); ax6.set_xlabel('t (s)'); ax6.legend(); ax6.grid(True)
 
         fig.tight_layout()
         os.makedirs(os.path.dirname(png_path) if os.path.dirname(png_path) else '.', exist_ok=True)
@@ -154,9 +150,16 @@ class DataLogger:
                 writer.writerows(total_rows)
             print(f"Combined CSV saved to {total_csv} ({len(total_rows)} iterations)")
 
-            # PNG total (toutes données combinées)
+            # PNG total — timestamps continus entre sessions
             combined = cls()
-            combined._rows = [row for dl in session_loggers for row in dl._rows]
+            time_offset = 0.0
+            for dl in session_loggers:
+                for row in dl._rows:
+                    new_row = dict(row)
+                    new_row['timestamp'] = round(row['timestamp'] + time_offset, 4)
+                    combined._rows.append(new_row)
+                if dl._rows:
+                    time_offset += dl._rows[-1]['timestamp'] + 0.05
             combined.save_plot(os.path.join(out_dir, 'run_total.png'))
 
         # PNG trajectoires : une couleur par session
