@@ -1,75 +1,77 @@
-Instructions d'installation pour Windows (sans WSL)
+Instructions d'installation — coppelia_pioneer (Windows, CoppeliaSim)
 
-Ces étapes permettent de préparer une machine Windows pour exécuter torch_run.py, torch_back.py, torch_online.py, monitoring.py et zmq_pioneer_simulation.py en mode natif.
+Fichiers du projet :
+  torch_run.py               -- script principal
+  torch_back.py              -- réseau de neurones PioneerNN
+  torch_online.py            -- boucle d'apprentissage en ligne
+  zmq_pioneer_simulation.py  -- interface CoppeliaSim via ZMQ
+  data_logger.py             -- enregistrement CSV et graphiques
+  monitoring.py              -- affichage temps réel (optionnel)
+  simu.ttt                   -- scène CoppeliaSim
+
 
 1. Installer Python 3.8+
 
-   * (Si pas déjà isntallé) Téléchargez l'installateur Windows de Python (≥ 3.8) depuis [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/).
-   * Lors de l'installation, cochez **Add Python to PATH**.
-   * Vérifiez la version dans PowerShell :
+   Téléchargez Python (>= 3.8) depuis https://www.python.org/downloads/windows/
+   Cochez "Add Python to PATH" lors de l'installation.
 
-     ```powershell
-     python --version  # Doit renvoyer Python 3.8+ (idéalement 3.10+)
-     ```
+   Vérification dans PowerShell :
+     python --version
+
 
 2. Installer les dépendances Python
 
-   Ouvrez **PowerShell** (terminal windows en mode utilisateur) et exécutez :
+   Dans PowerShell :
+     python -m pip install --upgrade pip
+     pip install torch matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
 
-   ```powershell
-   python -m pip install --upgrade pip
-   pip install torch numpy matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
-   ```
+     torch                            : PyTorch
+     matplotlib + PyQt5               : graphiques et affichage temps réel
+     pyzmq + cbor2                    : dépendances ZMQ Remote API
+     coppeliasim-zmqremoteapi-client  : client Python pour CoppeliaSim
 
-   * **torch** : bibliothèque PyTorch
-   * **numpy** : calcul numérique
-   * **matplotlib** : tracé de graphiques
-   * **PyQt5** : backend Qt pour Matplotlib
-   * **pyzmq**, **cbor2** : dépendances ZMQ Remote API
-   * **coppeliasim-zmqremoteapi-client** : client Python pour CoppeliaSim ZMQ Remote API
 
-3. Installer CoppeliaSim (Windows) -- Si pas déjà installé
+3. Installer CoppeliaSim (Windows)
 
-   * Téléchargez la version Windows de CoppeliaSim depuis [https://www.coppeliarobotics.com/downloads](https://www.coppeliarobotics.com/downloads).
-   * Décompressez l'archive, idéalement dans `C:\CoppeliaSim`.
+   Téléchargez depuis https://www.coppeliarobotics.com/downloads
+   Décompressez dans C:\CoppeliaSim (ou autre emplacement).
 
-   Assurez vous de voir sur la console CoppeliaSim :
+   Au démarrage de CoppeliaSim, vérifiez dans la console :
+     [ZMQ remote API server@addOnScript] ZeroMQ Remote API server starting (rpcPort=23000)...
 
-   ```text
-   [Connectivity >> ZMQ remote API server@addOnScript:info] ZeroMQ Remote API server starting (rpcPort=23000)...
-   ```
 
 4. Préparer le projet
 
-   * Copiez tout le dossier `Windows_torch` (contenant vos scripts et `simu.ttt`) dans un emplacement Windows, par exemple :
-     `C:\Users\VotreNom\Documents\Windows_torch`.
+   Copiez le dossier du projet dans un emplacement Windows, par exemple :
+     C:\Users\VotreNom\Documents\coppelia_pioneer
 
-7. Lancer la simulation depuis Windows
 
-   a. Dans PowerShell, placez-vous dans le dossier du projet :
+5. Lancer
 
-   ```powershell
-   cd C:\Users\VotreNom\Documents\viz_nowrap
-   ```
+   a. Ouvrez CoppeliaSim, chargez simu.ttt (File > Open Scene), cliquez Play (▶).
 
-   b. Démarrez la scène puis la simulation :
-   # (Si vous ne l'avez pas déjà fait) lancez CoppeliaSim, puis dans l'interface cliquez sur  Play
+   b. Dans PowerShell :
+        cd C:\Users\VotreNom\Documents\coppelia_pioneer
+        python torch_run.py
 
-   ```powershell
-   python torch_run.py
-   ```
+   c. Répondez aux prompts :
+        Enable real-time display?             --> y (monitoring) ou n
+        Do you want to load previous network? --> y (charge last_w_torch_3in.json) ou n
+        Do you want to learn?                 --> y (apprentissage) ou n
+        Enter the first target : x y radian  --> ex: 0 0 0
 
-   c. Répondez aux prompts (`Enable real-time display?`, `Do you want to load previous network?`, `Do you want to learn?`).
 
-   Si tout est correctement configuré, vous verrez :
+6. Résultats
 
-   * Le robot Pioneer s'afficher et bouger.
-   * Les graphiques de monitoring s'ouvrir.
+   Les résultats sont sauvegardés dans res/run_YYYYMMDD_HHMMSS/ :
+     training_session_N_*.csv / .png   -- données de chaque session
+     run_total.csv / .png              -- toutes sessions combinées
+     run_trajectoires.png              -- trajectoires XY par session (couleurs)
 
-**Remarques**
+   Les poids entraînés sont sauvegardés dans last_w_torch_3in.json
+   (le script demande confirmation avant d'écraser le fichier existant).
 
-* Pour désinstaller, supprimez le dossier Python et CoppeliaSim, et retirez les paquets via :
 
-  ```powershell
-  pip uninstall torch numpy matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
-  ```
+Paramètres modifiables (torch_run.py) :
+  HL_size       = 1000   -- taille de la couche cachée
+  LEARNING_RATE = 0.2    -- taux d'apprentissage
