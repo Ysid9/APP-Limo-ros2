@@ -7,14 +7,14 @@ import os
 try:
     import coppeliasim_zmqremoteapi_client as zmq
     from coppeliasim_zmqremoteapi_client import RemoteAPIClient
-    print("✅ Successfully imported coppeliasim_zmqremoteapi_client")
+    print("Successfully imported coppeliasim_zmqremoteapi_client")
 except ImportError:
     try:
         sys.path.append(os.path.join(os.path.dirname(__file__), 'zmqRemoteApi/asyncio'))
         from zmqRemoteApi import RemoteAPIClient
-        print("✅ Successfully imported zmqRemoteApi")
+        print("Successfully imported zmqRemoteApi")
     except ImportError:
-        print("❌ Failed to import ZMQ Remote API client. Please install it with: pip install coppeliasim-zmqremoteapi-client")
+        print("Failed to import ZMQ Remote API client. Please install it with: pip install coppeliasim-zmqremoteapi-client")
         sys.exit(1)
 
 def to_rad(deg):

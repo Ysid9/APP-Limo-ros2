@@ -28,9 +28,10 @@ atexit.register(cleanup)
 
 time.sleep(1)
 
-HL_size    = 1000
-input_size = 3
-output_size = 2
+HL_size       = 1000
+LEARNING_RATE = 0.2
+input_size    = 3
+output_size   = 2
 
 run_stamp = time.strftime('%Y%m%d_%H%M%S')
 run_dir   = os.path.join('res', f'run_{run_stamp}')
@@ -58,7 +59,7 @@ if choice.lower() == 'y':
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger  = DataLogger()
-trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger)
+trainer = PyTorchOnlineTrainer(robot, network, monitor_instance, logger, LEARNING_RATE)
 
 choice = ''
 while choice not in ('y', 'n'):

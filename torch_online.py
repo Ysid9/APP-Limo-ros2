@@ -8,7 +8,7 @@ def theta_s(x, y):
 
 
 class PyTorchOnlineTrainer:
-    def __init__(self, robot, nn_model, monitor=None, logger=None):
+    def __init__(self, robot, nn_model, monitor=None, logger=None, learning_rate=0.2):
         self.robot = robot
         self.network = nn_model
         self.alpha = [1/6, 1/6, 1/(math.pi)]
@@ -16,7 +16,7 @@ class PyTorchOnlineTrainer:
         self.running = False
         self.training = False
 
-        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=0.2, momentum=0)
+        self.optimizer = torch.optim.SGD(self.network.parameters(), lr=learning_rate, momentum=0)
 
         self.monitor = monitor
         self.logger = logger
