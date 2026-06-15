@@ -16,6 +16,7 @@ class PyTorchOnlineTrainer:
         self.running = False
         self.training = False
 
+        self.learning_rate = learning_rate
         self.optimizer = torch.optim.SGD(self.network.parameters(), lr=learning_rate, momentum=0)
 
         self.monitor = monitor
@@ -84,11 +85,11 @@ class PyTorchOnlineTrainer:
                 if crit_ap <= crit_av:
                     self.optimizer.zero_grad()
                     grad_tensor = torch.tensor(grad, dtype=torch.float32)
-                    self.manual_backward(input_tensor, grad_tensor, 0.2, 0)
+                    self.manual_backward(input_tensor, grad_tensor, self.learning_rate, 0)
                 else:
                     self.optimizer.zero_grad()
                     grad_tensor = torch.tensor(grad, dtype=torch.float32)
-                    self.manual_backward(input_tensor, grad_tensor, 0.2, 0)
+                    self.manual_backward(input_tensor, grad_tensor, self.learning_rate, 0)
 
             if self.monitor:
                 self.monitor.update(
