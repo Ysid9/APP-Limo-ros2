@@ -42,12 +42,14 @@ class LimoROS2Interface(Node):
         with self._lock:
             return list(self._position)
 
-    def set_cmd_vel(self, v_lin, v_ang):
+    def set_cmd_vel(self, v_lin, v_ang, v_lat=0.0):
         if self._safety_limits:
             v_lin = max(-0.5, min(0.5, v_lin))
+            v_lat = max(-0.5, min(0.5, v_lat))
             v_ang = max(-1.0, min(1.0, v_ang))
         msg = Twist()
-        msg.linear.x = float(v_lin)
+        msg.linear.x  = float(v_lin)
+        msg.linear.y  = float(v_lat)
         msg.angular.z = float(v_ang)
         self._cmd_pub.publish(msg)
 
