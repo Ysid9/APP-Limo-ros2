@@ -151,13 +151,20 @@ def main():
     ax.legend(loc='upper right', fontsize=8)
     ani = FuncAnimation(fig, update, interval=50, blit=False, cache_frame_data=False)
 
+    def on_close(event):
+        if rclpy.ok():
+            rclpy.shutdown()
+
+    fig.canvas.mpl_connect('close_event', on_close)
+
     try:
         plt.tight_layout()
         plt.show()
     except KeyboardInterrupt:
-        pass
+        plt.close('all')
     finally:
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
