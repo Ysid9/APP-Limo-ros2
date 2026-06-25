@@ -72,7 +72,7 @@ install(TARGETS
   tf_pub  
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch src 
+install(DIRECTORY launch src config
   DESTINATION share/${PROJECT_NAME}/)
   
 ament_export_include_directories(

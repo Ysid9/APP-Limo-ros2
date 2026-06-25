@@ -16,16 +16,16 @@ class LimoROS2Interface(Node):
         self._odom_received = False
 
         self._odom_sub = self.create_subscription(
-            Odometry, '/odom', self._odom_callback, 10)
+            Odometry, '/odometry/filtered', self._odom_callback, 10)
         self._cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
         self._spin_thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
         self._spin_thread.start()
 
-        print('LimoROS2Interface ready — waiting for first /odom message...')
+        print('LimoROS2Interface ready — waiting for first /odometry/filtered message...')
         while not self._odom_received:
             time.sleep(0.05)
-        print('First /odom received.')
+        print('First /odometry/filtered received.')
 
     def _odom_callback(self, msg):
         x = msg.pose.pose.position.x
