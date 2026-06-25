@@ -1,0 +1,21 @@
+BRANCHE : ekf
+=============
+
+Approche : robot_localization EKF
+----------------------------------
+Le noeud EKF (robot_localization) fusionne l'odométrie roue (/wheel/odom)
+et publie une odométrie filtrée (/odometry/filtered) plus stable.
+Il prend aussi en charge le TF odom→base_link (limo_base ne le publie plus).
+
+ros2_limo_interface.py lit /odometry/filtered au lieu de /odom.
+
+Fichiers modifiés :
+  ros2_limo_interface.py              -> lit /odometry/filtered
+  limo_ros2/limo_base/launch/limo_base.launch.py  -> ajoute ekf_node, pub_odom_tf=false
+  limo_ros2/limo_base/config/ekf_params.yaml      -> config EKF 2D, entrée /wheel/odom
+
+Lancement :
+  ros2 launch limo_base limo_base.launch.py
+
+Packages requis :
+  sudo apt install ros-humble-robot-localization
