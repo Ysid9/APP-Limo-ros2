@@ -56,7 +56,7 @@ class PyTorchOnlineTrainer:
                        self.alpha[2]**2 * (position[2] - target[2] -
                                            theta_s(position[0], position[1]))**2)
 
-            self.robot.set_cmd_vel(command[0], command[1])
+            self.robot.set_cmd_vel(command[0], command[1], command[2])
             time.sleep(0.050)
             position = self.robot.get_position()
 
@@ -64,14 +64,17 @@ class PyTorchOnlineTrainer:
             network_input[1] = (position[1] - target[1]) * self.alpha[1]
             network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
 
-            grad = [0.0, 0.0]
+            grad = [0.0, 0.0, 0.0]
 
             if self.training:
+                ex = position[0] - target[0]
+                ey = position[1] - target[1]
                 e_theta = position[2] - target[2] - theta_s(position[0], position[1])
+                c, s = math.cos(position[2]), math.sin(position[2])
                 grad = [
-                    -2*(self.alpha[0]**2*(position[0]-target[0])*math.cos(position[2])
-                       +self.alpha[1]**2*(position[1]-target[1])*math.sin(position[2])),
-                    -2*self.alpha[2]**2*e_theta
+                    -2*(self.alpha[0]**2*ex*c + self.alpha[1]**2*ey*s),   # ∂J/∂v_x
+                    -2*(-self.alpha[0]**2*ex*s + self.alpha[1]**2*ey*c),  # ∂J/∂v_y
+                    -2*self.alpha[2]**2*e_theta                            # ∂J/∂v_ang
                 ]
 
             if self.monitor:
@@ -89,7 +92,7 @@ class PyTorchOnlineTrainer:
                 grad_tensor = torch.tensor(grad, dtype=torch.float32)
                 self.manual_backward(output_tensor, grad_tensor, self.learning_rate, 0)
         
-        self.robot.set_cmd_vel(0, 0)
+        self.robot.set_cmd_vel(0, 0, 0)
     
     def manual_backward(self, outputs, grad_tensor, learning_rate, momentum):
         self.network.zero_grad()

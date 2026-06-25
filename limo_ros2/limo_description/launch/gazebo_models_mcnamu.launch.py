@@ -152,13 +152,6 @@ def generate_launch_description():
             '-Y', spawn_yaw_val],
         output='screen')
 
-    # Watchdog : stoppe le robot si aucun cmd_vel reçu depuis 0.5s
-    # (reproduit le comportement du driver limo_base sur le robot réel)
-    watchdog_cmd = Node(
-        package='limo_description',
-        executable='cmd_vel_watchdog.py',
-        name='cmd_vel_watchdog',
-        output='screen')
 
     ld = LaunchDescription()
 
@@ -181,6 +174,5 @@ def generate_launch_description():
     ld.add_action(start_joint_state_publisher_gui_node)
     ld.add_action(start_joint_state_publisher_cmd)
     ld.add_action(start_rviz_cmd)
-    ld.add_action(watchdog_cmd)
 
     return ld

@@ -48,7 +48,7 @@ atexit.register(cleanup)
 HL_size = 1000
 LEARNING_RATE = 0.2
 input_size = 3
-output_size = 2
+output_size = 3
 
 network = PioneerNN(input_size, HL_size, output_size)
 
@@ -67,12 +67,12 @@ while choice.lower() not in ('y', 'n'):
     choice = input('Do you want to load previous network? (y/n) --> ')
 if choice.lower() == 'y':
     try:
-        with open('last_w_torch_3in.json') as fp:
+        with open('last_w_torch_mcnamu.json') as fp:
             json_obj = json.load(fp)
         network.load_weights_from_json(json_obj)
-        print("Weights loaded from last_w_torch_3in.json")
+        print("Weights loaded from last_w_torch_mcnamu.json")
     except FileNotFoundError:
-        print("No weight file found (last_w_torch_3in.json), starting with random weights.")
+        print("No weight file found (last_w_torch_mcnamu.json), starting with random weights.")
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger = DataLogger()
@@ -138,9 +138,9 @@ while save_choice.lower() not in ('y', 'n'):
 
 if save_choice.lower() == 'y':
     json_obj = network.save_weights_to_json()
-    with open('last_w_torch_3in.json', 'w') as fp:
+    with open('last_w_torch_mcnamu.json', 'w') as fp:
         json.dump(json_obj, fp)
-    print("Weights saved to last_w_torch_3in.json")
+    print("Weights saved to last_w_torch_mcnamu.json")
 else:
     print("Weights not saved.")
 
