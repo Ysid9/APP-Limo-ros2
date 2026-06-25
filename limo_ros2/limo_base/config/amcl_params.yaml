@@ -1,0 +1,59 @@
+amcl:
+  ros__parameters:
+    use_sim_time: false
+    # Modèle de mouvement différentiel
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    robot_model_type: nav2_amcl::DifferentialMotionModel
+
+    # Frames
+    base_frame_id:   base_link
+    odom_frame_id:   odom
+    global_frame_id: map
+    scan_topic:      scan
+
+    # Particules (salle petite → moins de particules suffisent)
+    min_particles:   500
+    max_particles:   2000
+
+    # Laser
+    laser_model_type:          likelihood_field
+    laser_likelihood_max_dist: 2.0
+    laser_max_range:           20.0
+    laser_min_range:           -1.0
+    max_beams:                 60
+    sigma_hit:                 0.2
+    z_hit:                     0.5
+    z_rand:                    0.5
+    z_max:                     0.05
+    z_short:                   0.05
+    lambda_short:              0.1
+
+    # Mise à jour
+    update_min_d:   0.2
+    update_min_a:   0.2
+    resample_interval: 1
+    transform_tolerance: 1.0
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+    pf_err: 0.05
+    pf_z:   0.99
+
+    # Pose initiale : robot toujours au point de départ de la cartographie
+    set_initial_pose: true
+    initial_pose_x:   0.0
+    initial_pose_y:   0.0
+    initial_pose_z:   0.0
+    initial_pose_yaw: 0.0
+
+    tf_broadcast:    true
+    save_pose_rate:  0.5
+
+lifecycle_manager_localization:
+  ros__parameters:
+    use_sim_time: false
+    autostart:    true
+    node_names:   ['map_server', 'amcl']
