@@ -1,0 +1,25 @@
+BRANCHE : slam_online
+=====================
+
+Approche : SLAM temps réel (slam_toolbox online_async)
+--------------------------------------------------------
+slam_toolbox construit et met à jour la carte en temps réel à partir du lidar.
+Il publie le TF map→odom. Combiné au TF odom→base_link de limo_base,
+la chaîne complète est : map→odom→base_link.
+
+ros2_limo_interface.py lit directement le TF map→base_link via tf2 (timer 20ms).
+Pas besoin de carte préalable : le SLAM démarre à froid à chaque session.
+
+Fichiers modifiés :
+  ros2_limo_interface.py              -> TF lookup map→base_link (tf2)
+  limo_ros2/limo_base/launch/limo_base.launch.py  -> ajoute async_slam_toolbox_node
+  limo_ros2/limo_base/config/slam_online_params.yaml -> config slam_toolbox, résolution 5cm
+
+Lancement :
+  ros2 launch limo_base limo_base.launch.py
+
+Packages requis :
+  sudo apt install ros-humble-slam-toolbox
+
+Note : la carte est reconstruite à chaque démarrage. Les sessions répétées
+dans la même salle bénéficient du loop-closing pour corriger la dérive.
