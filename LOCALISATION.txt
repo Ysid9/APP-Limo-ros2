@@ -1,0 +1,39 @@
+BRANCHE : slam_mapping
+======================
+
+Approche : cartographie dédiée (slam_toolbox) puis localisation (AMCL)
+------------------------------------------------------------------------
+Deux phases séparées :
+
+PHASE 1 — Cartographie (une seule fois par salle)
+  Lancement :
+    ros2 launch limo_base limo_mapping.launch.py
+
+  Téléopérer le robot pour couvrir toute la salle, puis sauvegarder la carte :
+    ros2 service call /slam_toolbox/save_map slam_toolbox/srv/SaveMap \
+        "{name: {data: '$HOME/torch_ros/maps/my_map'}}"
+
+  Résultat : ~/torch_ros/maps/my_map.yaml  +  ~/torch_ros/maps/my_map.pgm
+
+PHASE 2 — Localisation pour les sessions d'apprentissage
+  Lancement :
+    ros2 launch limo_base limo_localization.launch.py \
+        map:=$HOME/torch_ros/maps/my_map.yaml
+
+  Positionner le robot au même point de départ qu'en phase 1 (origine de la carte).
+  AMCL s'initialise automatiquement à (0, 0, 0).
+
+Fichiers modifiés / créés :
+  ros2_limo_interface.py                              -> TF lookup map→base_link (tf2)
+  limo_ros2/limo_base/launch/limo_mapping.launch.py   -> phase 1 : slam_toolbox mapping
+  limo_ros2/limo_base/launch/limo_localization.launch.py -> phase 2 : map_server + AMCL
+  limo_ros2/limo_base/config/slam_mapping_params.yaml -> config slam_toolbox phase 1
+  limo_ros2/limo_base/config/amcl_params.yaml         -> config AMCL phase 2
+
+Packages requis :
+  sudo apt install ros-humble-slam-toolbox
+  sudo apt install ros-humble-nav2-amcl ros-humble-nav2-map-server \
+                   ros-humble-nav2-lifecycle-manager
+
+Avantage : la carte est stable d'une session à l'autre (pas de dérive cumulative).
+Contrainte : refaire la phase 1 si la salle change de configuration.
