@@ -42,7 +42,7 @@ class LimoROS2Interface(Node):
         with self._lock:
             return list(self._position)
 
-    def set_cmd_vel(self, v_lin, v_ang, v_lat=0.0):
+    def set_cmd_vel(self, v_lin, v_lat, v_ang=0.0):
         if self._safety_limits:
             v_lin = max(-0.5, min(0.5, v_lin))
             v_lat = max(-0.5, min(0.5, v_lat))
@@ -54,5 +54,5 @@ class LimoROS2Interface(Node):
         self._cmd_pub.publish(msg)
 
     def cleanup(self):
-        self.set_cmd_vel(0.0, 0.0)
+        self.set_cmd_vel(0.0, 0.0, 0.0)
         self.destroy_node()
