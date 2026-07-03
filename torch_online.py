@@ -10,38 +10,46 @@ class PyTorchOnlineTrainer:
         self.robot = robot
         self.network = nn_model
         self.learning_rate = learning_rate
-        # Facteurs de normalisation
         self.alpha = [1/6, 1/6, 1/(math.pi)]
 
-        # État de l'apprentissage
         self.running = False
         self.training = False
 
         self.monitor = monitor
         self.logger = logger
+        self._session_count = 0
+        self._debug_file = None
         
+    def _dlog(self, msg):
+        print(msg)
+        if self._debug_file:
+            self._debug_file.write(msg + '\n')
+            self._debug_file.flush()
+
     def train(self, target):
-        """
-        Procédure d'apprentissage en ligne
-        
-        Args:
-            target (list): position cible [x,y,theta]
-        """
-        
+        self._session_count += 1
+        debug_path = f'debug_session_{self._session_count}.txt'
+        self._debug_file = open(debug_path, 'w')
+
         if self.monitor:
             self.monitor.start_session()
             self.monitor.set_target(target)
             
-        # Obtenir la position actuelle du robot
         position = self.robot.get_position()
-        
-        # Calculer l'entrée du réseau (erreur normalisée)
+
         network_input = [0, 0, 0]
         network_input[0] = (position[0] - target[0]) * self.alpha[0]
         network_input[1] = (position[1] - target[1]) * self.alpha[1]
         network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
-        
-        # Boucle d'apprentissage
+
+        ts = theta_s(position[0], position[1])
+        self._dlog(f'=== SESSION {self._session_count} START ===')
+        self._dlog(f'target  = {[round(v,4) for v in target]}')
+        self._dlog(f'pos     = {[round(v,4) for v in position]}')
+        self._dlog(f'theta_s = {ts:.4f} rad ({math.degrees(ts):.1f} deg)')
+        self._dlog(f'inputs  = {[round(v,4) for v in network_input]}')
+
+        step = 0
         while self.running:
             input_tensor = torch.tensor(network_input, dtype=torch.float32)
             if self.training:
@@ -55,6 +63,13 @@ class PyTorchOnlineTrainer:
                        self.alpha[1]**2 * (position[1] - target[1])**2 +
                        self.alpha[2]**2 * (position[2] - target[2] -
                                            theta_s(position[0], position[1]))**2)
+
+            if step < 20 or step % 50 == 0:
+                self._dlog(f'[{step:04d}] pos={[round(v,3) for v in position]} '
+                           f'inp={[round(v,3) for v in network_input]} '
+                           f'cmd=[{command[0]:.3f},{command[1]:.3f},{command[2]:.3f}] '
+                           f'cost={crit_av:.5f}')
+            step += 1
 
             self.robot.set_cmd_vel(command[0], command[1], command[2])
             time.sleep(0.050)
@@ -92,6 +107,9 @@ class PyTorchOnlineTrainer:
                 grad_tensor = torch.tensor(grad, dtype=torch.float32)
                 self.manual_backward(output_tensor, grad_tensor, self.learning_rate, 0)
         
+        self._dlog(f'=== SESSION {self._session_count} END (steps={step}) ===')
+        self._debug_file.close()
+        self._debug_file = None
         self.robot.set_cmd_vel(0, 0, 0)
     
     def manual_backward(self, outputs, grad_tensor, learning_rate, momentum):
