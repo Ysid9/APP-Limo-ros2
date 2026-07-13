@@ -3,7 +3,10 @@ import math
 import torch
 
 def theta_s(x, y):
-    return math.tanh(10.*x)*math.atan(1.*y)
+    return 0.0
+
+def normalize_angle(a):
+    return math.atan2(math.sin(a), math.cos(a))
 
 class PyTorchOnlineTrainer:
     def __init__(self, robot, nn_model, monitor=None, logger=None, learning_rate=0.2):
@@ -39,8 +42,8 @@ class PyTorchOnlineTrainer:
         network_input = [0, 0, 0]
         network_input[0] = (position[0] - target[0]) * self.alpha[0]
         network_input[1] = (position[1] - target[1]) * self.alpha[1]
-        network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
-        
+        network_input[2] = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
+
         # Boucle d'apprentissage
         while self.running:
             input_tensor = torch.tensor(network_input, dtype=torch.float32)
@@ -51,10 +54,10 @@ class PyTorchOnlineTrainer:
                 with torch.no_grad():
                     command = self.network(input_tensor).tolist()
 
+            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1]))
             crit_av = (self.alpha[0]**2 * (position[0] - target[0])**2 +
                        self.alpha[1]**2 * (position[1] - target[1])**2 +
-                       self.alpha[2]**2 * (position[2] - target[2] -
-                                           theta_s(position[0], position[1]))**2)
+                       self.alpha[2]**2 * e_theta**2)
 
             self.robot.set_cmd_vel(command[0], command[1])
             time.sleep(0.050)
@@ -62,16 +65,16 @@ class PyTorchOnlineTrainer:
 
             network_input[0] = (position[0] - target[0]) * self.alpha[0]
             network_input[1] = (position[1] - target[1]) * self.alpha[1]
-            network_input[2] = (position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
+            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1]))
+            network_input[2] = e_theta * self.alpha[2]
 
             grad = [0.0, 0.0]
 
             if self.training:
-                e_theta = position[2] - target[2] - theta_s(position[0], position[1])
                 grad = [
                     -2*(self.alpha[0]**2*(position[0]-target[0])*math.cos(position[2])
                        +self.alpha[1]**2*(position[1]-target[1])*math.sin(position[2])),
-                    -2*self.alpha[2]**2*e_theta
+                    -2*self.alpha[2]**2*e_theta  # e_theta déjà normalisé dans (-π, π)
                 ]
 
             if self.monitor:
