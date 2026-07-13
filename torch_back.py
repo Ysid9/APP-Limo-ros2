@@ -13,7 +13,7 @@ class PioneerNN(nn.Module):
         self.hidden = nn.Linear(input_size, hidden_size)
         self.output = nn.Linear(hidden_size, output_size)
         
-        # Fonction d'activation (tanh comme dans l'implémentation originale)
+        # Fonction d'activation 
         self.activation = nn.Tanh()
         
         nn.init.xavier_uniform_(self.hidden.weight)
