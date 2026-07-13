@@ -83,8 +83,11 @@ LimoDriver::LimoDriver(std::string node_name):rclcpp::Node(node_name),keep_runni
         keep_running_=true;
         this->connect(port_name, B460800);
         this->enableCommandedMode();
+        if (use_mcnamu_) {
+            this->enableMcMode();
+        }
         RCLCPP_INFO(this->get_logger(),"Open the serial port:'%s'",port_name.c_str());
-        
+
 
     }
 }
@@ -382,6 +385,22 @@ void LimoDriver::enableCommandedMode() {
 
     sendFrame(frame);
     RCLCPP_INFO(this->get_logger(),"enableCommandedMode :");
+}
+
+void LimoDriver::enableMcMode() {
+    LimoFrame frame;
+    frame.id = MSG_CTRL_MODE_CONFIG_ID;
+    frame.data[0] = 0x01;
+    frame.data[1] = 0;
+    frame.data[2] = 0x01;
+    frame.data[3] = 0;
+    frame.data[4] = 0;
+    frame.data[5] = 0;
+    frame.data[6] = 0;
+    frame.data[7] = 0;
+
+    sendFrame(frame);
+    RCLCPP_INFO(this->get_logger(),"enableMcMode :");
 }
 
 void LimoDriver::setMotionCommand(double linear_vel, double angular_vel,
