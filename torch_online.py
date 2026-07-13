@@ -3,7 +3,7 @@ import math
 import torch
 
 def theta_s(x, y):
-    return 0.0
+    return math.tanh(10.*x) * math.atan(1.*y)
 
 def normalize_angle(a):
     return math.atan2(math.sin(a), math.cos(a))
