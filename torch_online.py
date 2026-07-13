@@ -2,8 +2,21 @@ import time
 import math
 import torch
 
-def theta_s(x, y):
-    return math.tanh(10.*x) * math.atan(1.*y)
+# Ancienne theta_s — conçue pour le quadrant (+x,+y).
+# Problème : tanh(10x) sature dès |x|>0.5, donc theta_s ≈ sign(x)·atan(y)
+# identique dans les quadrants opposés (ex: (2.5,2.5) et (-2.5,-2.5) donnent
+# tous deux theta_s ≈ +68°). Le réseau reçoit le même input[2] dans des
+# situations qui nécessitent des comportements opposés → ambiguïté,
+# impossibilité de généraliser à tous les quadrants.
+#
+# def theta_s(x, y):
+#     return math.tanh(10.*x) * math.atan(1.*y)
+
+# Nouvelle theta_s — direction réelle vers la cible depuis (x,y).
+# Donne un signal angulaire unique et cohérent dans tous les quadrants :
+# le robot apprend à s'orienter vers la cible, quelle que soit sa position.
+def theta_s(x, y, x_t=0.0, y_t=0.0):
+    return math.atan2(y_t - y, x_t - x)
 
 def normalize_angle(a):
     return math.atan2(math.sin(a), math.cos(a))
@@ -29,7 +42,7 @@ class PyTorchOnlineTrainer:
     def _p_controller(self, position, target):
         ex = position[0] - target[0]
         ey = position[1] - target[1]
-        e_th = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1]))
+        e_th = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1], target[0], target[1]))
         v_lin = -(ex * math.cos(position[2]) + ey * math.sin(position[2])) * self.k_lin
         v_ang = -self.k_ang * e_th
         return v_lin, v_ang
@@ -44,7 +57,7 @@ class PyTorchOnlineTrainer:
         network_input = [0, 0, 0]
         network_input[0] = (position[0] - target[0]) * self.alpha[0]
         network_input[1] = (position[1] - target[1]) * self.alpha[1]
-        network_input[2] = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1])) * self.alpha[2]
+        network_input[2] = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1], target[0], target[1])) * self.alpha[2]
 
         in_p_mode = False
 
@@ -58,7 +71,7 @@ class PyTorchOnlineTrainer:
                     output_tensor = self.network(input_tensor)
                     command = output_tensor.tolist()
 
-            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1]))
+            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1], target[0], target[1]))
             crit_av = (self.alpha[0]**2 * (position[0] - target[0])**2 +
                        self.alpha[1]**2 * (position[1] - target[1])**2 +
                        self.alpha[2]**2 * e_theta**2)
@@ -88,7 +101,7 @@ class PyTorchOnlineTrainer:
 
             network_input[0] = (position[0] - target[0]) * self.alpha[0]
             network_input[1] = (position[1] - target[1]) * self.alpha[1]
-            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1]))
+            e_theta = normalize_angle(position[2] - target[2] - theta_s(position[0], position[1], target[0], target[1]))
             network_input[2] = e_theta * self.alpha[2]
 
             grad_log = [0.0, 0.0]
