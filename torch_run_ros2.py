@@ -45,8 +45,8 @@ def cleanup():
     rclpy.shutdown()
 atexit.register(cleanup)
 
-HL_size = 1000
-LEARNING_RATE = 0.2
+HL_size = 50
+LEARNING_RATE = 0.01
 input_size = 3
 output_size = 2
 
