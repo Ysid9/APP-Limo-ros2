@@ -24,7 +24,7 @@ def theta_s(x, y, x_t=0.0, y_t=0.0):
 # Près (d → 0)  : theta_s_prime → 0          →  e_theta ≈ θ - θ_target
 #                  le robot s'aligne sur l'orientation finale souhaitée
 # beta < 0 contrôle la vitesse de transition (défaut -1.0 : transition à ~1 m)
-def theta_s_prime(x, y, x_t=0.0, y_t=0.0, beta=-1.0):
+def theta_s_prime(x, y, x_t=0.0, y_t=0.0, beta=-5.0):
     d = math.sqrt((x - x_t)**2 + (y - y_t)**2)
     return -(1.0 - math.exp(beta * d)) * theta_s(x, y, x_t, y_t)
 
