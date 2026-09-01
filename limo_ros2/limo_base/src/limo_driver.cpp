@@ -83,8 +83,11 @@ LimoDriver::LimoDriver(std::string node_name):rclcpp::Node(node_name),keep_runni
         keep_running_=true;
         this->connect(port_name, B460800);
         this->enableCommandedMode();
+        if (use_mcnamu_) {
+            this->enableMcMode();
+        }
         RCLCPP_INFO(this->get_logger(),"Open the serial port:'%s'",port_name.c_str());
-        
+
 
     }
 }
@@ -384,6 +387,22 @@ void LimoDriver::enableCommandedMode() {
     RCLCPP_INFO(this->get_logger(),"enableCommandedMode :");
 }
 
+void LimoDriver::enableMcMode() {
+    LimoFrame frame;
+    frame.id = MSG_CTRL_MODE_CONFIG_ID;
+    frame.data[0] = 0x01;
+    frame.data[1] = 0;
+    frame.data[2] = 0x01;
+    frame.data[3] = 0;
+    frame.data[4] = 0;
+    frame.data[5] = 0;
+    frame.data[6] = 0;
+    frame.data[7] = 0;
+
+    sendFrame(frame);
+    RCLCPP_INFO(this->get_logger(),"enableMcMode :");
+}
+
 void LimoDriver::setMotionCommand(double linear_vel, double angular_vel,
                                   double lateral_velocity, double steering_angle) {
     LimoFrame frame;
@@ -486,15 +505,15 @@ void LimoDriver::publishIMUData(double stamp) {
 
     if (flag==0)
     {
-        double present_theta_ =imu_data_.yaw;
-        double last_theta_ = imu_data_.yaw;
-        flag=1;    
-        
+        present_theta_ = imu_data_.yaw;
+        last_theta_ = imu_data_.yaw;
+        real_theta_ = imu_data_.yaw;
+        flag=1;
+
     }
     //ROS_INFO("flag:%d",flag);
     present_theta_ = imu_data_.yaw;
     delta_theta_ = present_theta_ - last_theta_;
-    if(delta_theta_< 0.1 && delta_theta_> -0.1) delta_theta_=0;
     real_theta_ = real_theta_ + delta_theta_;
     last_theta_ = present_theta_;
     //ROS_INFO("present_theta_:%f;delta_theta_:%f;real_theta_:%f;last_theta_:%f",present_theta_,delta_theta_,real_theta_,last_theta_);

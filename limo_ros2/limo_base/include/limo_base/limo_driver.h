@@ -76,6 +76,7 @@ private:
     void setMotionCommand(double linear_vel, double steer_angle,
                           double lateral_vel, double angular_vel);
     void enableCommandedMode();
+    void enableMcMode();
     void processErrorCode(uint16_t error_code);
     void twistCmdCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
     double normalizeAngle(double angle);
@@ -103,7 +104,7 @@ private:
 
     bool pub_odom_tf_ = false;
     bool use_mcnamu_ = false;
-    double present_theta_,last_theta_,delta_theta_,real_theta_,rad;
+    double present_theta_ = 0.0, last_theta_ = 0.0, delta_theta_ = 0.0, real_theta_ = 0.0, rad = 0.0;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_publisher_;
     rclcpp::Publisher<limo_msgs::msg::LimoStatus>::SharedPtr status_publisher_;
 

@@ -18,6 +18,8 @@ def generate_launch_description():
                                                 description='Base link frame id')
     odom_topic_arg = DeclareLaunchArgument('odom_topic_name', default_value='odom',
                                            description='Odometry topic name')
+    use_mcnamu_arg = DeclareLaunchArgument('use_mcnamu', default_value='false',
+                                           description='Switch the vehicle to mecanum mode')
     #sim_control_rate_arg = DeclareLaunchArgument('control_rate', default_value='50',
     #                                             description='Simulation control loop update rate')
     # pub_odom_tf_arg = DeclareLaunchArgument('pub_odom_tf', default_value='false',
@@ -27,6 +29,7 @@ def generate_launch_description():
     odom_frame_arg = LaunchConfiguration('odom_frame',default='odom')
     base_link_frame_arg = LaunchConfiguration('base_frame',default='base_link')
     pub_odom_tf_arg_ = LaunchConfiguration('pub_odom_tf', default='true')
+    use_mcnamu_arg_ = LaunchConfiguration('use_mcnamu', default='false')
 
     remapping = [
                 ('odom', '/wheel/odom'),
@@ -43,7 +46,7 @@ def generate_launch_description():
                 'odom_frame': odom_frame_arg,
                 'base_frame': base_link_frame_arg,
                 'pub_odom_tf': pub_odom_tf_arg_,
-                'use_mcnamu': False
+                'use_mcnamu': use_mcnamu_arg_
         }],
         remappings=remapping
         )
