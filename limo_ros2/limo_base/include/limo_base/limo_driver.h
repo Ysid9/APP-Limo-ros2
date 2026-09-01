@@ -44,7 +44,11 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include "tf2_ros/static_transform_broadcaster.h"
+#if __has_include(<tf2_geometry_msgs/tf2_geometry_msgs.hpp>)
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>  // ROS2 Foxy only ships the .h header
+#endif
 #include <sensor_msgs/msg/imu.hpp>
 
 #include "std_msgs/msg/string.hpp"
