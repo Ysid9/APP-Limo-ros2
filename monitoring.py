@@ -86,24 +86,26 @@ class RobotMonitor:
         self.ax_cost.grid(True, linestyle='--', alpha=0.7)
         self.cost_line, = self.ax_cost.plot([], [], 'r-', linewidth=2)
         
-        # Graphique des vitesses (v_lin / v_ang)
+        # Graphique des vitesses (v_lin / v_lat / v_ang)
         self.ax_wheels = self.fig.add_subplot(gs[1, 2])
-        self.ax_wheels.set_title('v_lin / v_ang', fontweight='bold')
+        self.ax_wheels.set_title('v_lin / v_lat / v_ang', fontweight='bold')
         self.ax_wheels.set_xlabel('Temps (s)')
         self.ax_wheels.set_ylabel('m/s / rad/s')
         self.ax_wheels.grid(True, linestyle='--', alpha=0.7)
-        self.left_wheel_line, = self.ax_wheels.plot([], [], 'b-', linewidth=2, label='v_lin (m/s)')
-        self.right_wheel_line, = self.ax_wheels.plot([], [], 'g-', linewidth=2, label='v_ang (rad/s)')
+        self.v_lin_line, = self.ax_wheels.plot([], [], 'b-', linewidth=2, label='v_lin (m/s)')
+        self.v_lat_line, = self.ax_wheels.plot([], [], 'm-', linewidth=2, label='v_lat (m/s)')
+        self.v_ang_line, = self.ax_wheels.plot([], [], 'g-', linewidth=2, label='v_ang (rad/s)')
         self.ax_wheels.legend(loc='upper right')
-        
+
         # Graphique du gradient
         self.ax_gradient = self.fig.add_subplot(gs[2, 0])
         self.ax_gradient.set_title('Gradient', fontweight='bold')
         self.ax_gradient.set_xlabel('Temps (s)')
         self.ax_gradient.set_ylabel('Valeur du gradient')
         self.ax_gradient.grid(True, linestyle='--', alpha=0.7)
-        self.grad_line_left, = self.ax_gradient.plot([], [], 'c-', linewidth=2, label='Grad v_lin')
-        self.grad_line_right, = self.ax_gradient.plot([], [], 'm-', linewidth=2, label='Grad v_ang')
+        self.grad_lin_line, = self.ax_gradient.plot([], [], 'c-', linewidth=2, label='Grad v_lin')
+        self.grad_lat_line, = self.ax_gradient.plot([], [], 'y-', linewidth=2, label='Grad v_lat')
+        self.grad_ang_line, = self.ax_gradient.plot([], [], 'm-', linewidth=2, label='Grad v_ang')
         self.ax_gradient.legend(loc='upper right')
         
         # Graphiques des distances (erreurs) - deux graphes côte à côte
@@ -184,23 +186,28 @@ class RobotMonitor:
             self.ax_cost.set_ylim(0, max(max(self.cost_history) * 1.1, 0.1))
 
         if self.wheel_speeds:
-            left_speeds = [ws[0] for ws in self.wheel_speeds]
-            right_speeds = [ws[1] for ws in self.wheel_speeds]
-            self.left_wheel_line.set_data(rel_time, left_speeds)
-            self.right_wheel_line.set_data(rel_time, right_speeds)
+            v_lin_vals = [ws[0] for ws in self.wheel_speeds]
+            v_lat_vals = [ws[1] for ws in self.wheel_speeds]
+            v_ang_vals = [ws[2] for ws in self.wheel_speeds]
+            self.v_lin_line.set_data(rel_time, v_lin_vals)
+            self.v_lat_line.set_data(rel_time, v_lat_vals)
+            self.v_ang_line.set_data(rel_time, v_ang_vals)
             self.ax_wheels.set_xlim(0, max_t)
-            min_s = min(min(left_speeds), min(right_speeds))
-            max_s = max(max(left_speeds), max(right_speeds))
+            all_v = v_lin_vals + v_lat_vals + v_ang_vals
+            min_s = min(all_v)
+            max_s = max(all_v)
             margin = max((max_s - min_s) * 0.1, 0.1)
             self.ax_wheels.set_ylim(min_s - margin, max_s + margin)
 
         if self.gradients:
-            grad_left = [g[0] for g in self.gradients]
-            grad_right = [g[1] for g in self.gradients]
-            self.grad_line_left.set_data(rel_time, grad_left)
-            self.grad_line_right.set_data(rel_time, grad_right)
+            grad_lin = [g[0] for g in self.gradients]
+            grad_lat = [g[1] for g in self.gradients]
+            grad_ang = [g[2] for g in self.gradients]
+            self.grad_lin_line.set_data(rel_time, grad_lin)
+            self.grad_lat_line.set_data(rel_time, grad_lat)
+            self.grad_ang_line.set_data(rel_time, grad_ang)
             self.ax_gradient.set_xlim(0, max_t)
-            all_grads = grad_left + grad_right
+            all_grads = grad_lin + grad_lat + grad_ang
             min_g = min(all_grads)
             max_g = max(all_grads)
             margin = max((max_g - min_g) * 0.1, 0.1)
@@ -250,8 +257,8 @@ class RobotMonitor:
         
         Args:
             position (list): Position [x, y, theta] du robot
-            wheel_speeds (list): Vitesses [gauche, droite] des roues
-            gradient (list): Gradient [gauche, droite] pour l'apprentissage
+            wheel_speeds (list): Commande robot [v_lin, v_lat, v_ang]
+            gradient (list): Gradient [v_lin, v_lat, v_ang] pour l'apprentissage
             cost (float): Valeur de la fonction de coût
             distances (list): Distances/erreurs [x, y, theta] par rapport à la cible
         """
@@ -393,7 +400,7 @@ class RobotMonitorAdapter:
         self.monitor.add_data_point(
             position=position,
             wheel_speeds=wheel_speeds,
-            gradient=gradient if gradient is not None else [0, 0],
+            gradient=gradient if gradient is not None else [0, 0, 0],
             cost=cost if cost is not None else 0.0,
             distances=distances
         )
