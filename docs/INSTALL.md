@@ -26,6 +26,8 @@ echo "deb [arch=$(dpkg --print-architecture) \
 sudo apt update
 
 # installe ROS2 Humble, Gazebo, l'affichage des joints, la téléop clavier et colcon
+# (remplacer tous les ros-humble-* par ros-foxy-* sur une machine Foxy ;
+#  python3-colcon-common-extensions ne change pas, il n'est pas lié à une distribution)
 sudo apt install \
   ros-humble-desktop \
   ros-humble-gazebo-ros-pkgs \
@@ -38,9 +40,13 @@ sudo apt install \
 machine Foxy) sert à repositionner le robot manuellement entre deux
 sessions d'apprentissage sur robot réel (voir [`TRAINING.md`](TRAINING.md)).
 
-### 2. Dépendances Python
+### 2. Python
 
 ```bash
+# installe Python 3 et pip
+sudo apt install python3 python3-pip
+
+# dépendances du projet
 pip install torch matplotlib PyQt5
 ```
 
