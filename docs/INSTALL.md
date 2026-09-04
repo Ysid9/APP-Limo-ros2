@@ -1,10 +1,5 @@
 # Installation
 
-Le workflow actif du projet est **Ubuntu + ROS2 + Gazebo**. CoppeliaSim
-(`torch_run.py` / `zmq_pioneer_simulation.py`) est un chemin legacy antérieur au
-passage sous ROS2, il reste dans le dépôt mais n'est plus maintenu ni testé.
-Voir la note en bas de page si vous devez malgré tout le faire tourner.
-
 ## Ubuntu 22.04 + ROS2 Humble (poste de développement)
 
 Cette branche (`diff`) et la branche `ackermann` ciblent Humble. La branche
@@ -77,17 +72,3 @@ Le réseau de neurones (PyTorch) et le logging (`data_logger.py`,
 `monitoring.py`) n'ont eux-mêmes aucune dépendance ROS2, ils peuvent tourner
 sur macOS directement si vous voulez juste inspecter/rejouer des CSV de
 sessions déjà enregistrées avec `plot_results.py`.
-
-## Note : CoppeliaSim (legacy, non maintenu)
-
-`torch_run.py` charge une scène CoppeliaSim (`simu.ttt`) qui n'est **pas**
-versionnée dans ce dépôt (exclue via `.gitignore`, c'était le chemin de
-simulation avant le passage à Gazebo). Pour faire revivre ce chemin il
-faudrait recréer/retrouver cette scène et installer :
-
-```bash
-pip install torch matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
-```
-
-+ CoppeliaSim (Windows/Mac/Linux, téléchargement chez Coppelia Robotics).
-Ce chemin n'est plus la référence du projet, privilégier Gazebo.
