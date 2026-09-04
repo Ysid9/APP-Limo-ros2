@@ -2,25 +2,28 @@
 
 ## Ubuntu 22.04 + ROS2 Humble (poste de développement)
 
-Cette branche (`diff`) et la branche `ackermann` ciblent Humble. La branche
-`mecanum` doit aussi fonctionner sur ROS2 Foxy (utilisé sur l'un des deux
-robots réels, voir [`ROBOTS.md`](ROBOTS.md)), le driver C++ gère les deux
-via un include conditionnel (`__has_include`).
+Cette branche (`diff`) et la branche `ackermann` ciblent Humble.
 
 ### 1. ROS2 Humble
 
 ```bash
+# outils nécessaires pour ajouter un dépôt apt tiers
 sudo apt install software-properties-common curl
 
+# récupère la clé de signature du dépôt ROS2
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
   -o /usr/share/keyrings/ros-archive-keyring.gpg
 
+# ajoute le dépôt ROS2 aux sources apt
 echo "deb [arch=$(dpkg --print-architecture) \
   signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
   http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" \
   | sudo tee /etc/apt/sources.list.d/ros2.list
 
+# rafraîchit la liste des paquets disponibles
 sudo apt update
+
+# installe ROS2 Humble, Gazebo, l'affichage des joints, la téléop clavier et colcon
 sudo apt install \
   ros-humble-desktop \
   ros-humble-gazebo-ros-pkgs \
@@ -42,13 +45,16 @@ pip install torch matplotlib PyQt5
 ### 3. Workspace ROS2
 
 ```bash
+# crée le workspace ROS2 et y copie le paquet du dépôt
 mkdir -p ~/ros2_ws/src
 cp -r /chemin/vers/ce/depot/limo_ros2 ~/ros2_ws/src/
 
+# charge l'environnement ROS2 et compile le paquet
 cd ~/ros2_ws
 source /opt/ros/humble/setup.bash
 colcon build
 
+# source ROS2 et le workspace automatiquement à chaque ouverture de terminal
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 source ~/.bashrc
@@ -56,19 +62,3 @@ source ~/.bashrc
 
 Ensuite, voir [`TRAINING.md`](TRAINING.md) pour lancer Gazebo et une session
 d'apprentissage.
-
-## macOS
-
-ROS2 et Gazebo ne tournent pas nativement sur macOS. Deux options :
-
-- **Docker/VM Ubuntu 22.04** avec ROS2 Humble installé dedans (suivre les
-  étapes ci-dessus à l'intérieur), c'est la voie recommandée pour continuer
-  ce travail sur Mac.
-- Le devcontainer fourni dans `limo_ros2/.devcontainer/` (Dockerfile déjà
-  présent dans le dépôt), non testé dans le cadre de ce projet, à vérifier
-  avant de s'y fier.
-
-Le réseau de neurones (PyTorch) et le logging (`data_logger.py`,
-`monitoring.py`) n'ont eux-mêmes aucune dépendance ROS2, ils peuvent tourner
-sur macOS directement si vous voulez juste inspecter/rejouer des CSV de
-sessions déjà enregistrées avec `plot_results.py`.
