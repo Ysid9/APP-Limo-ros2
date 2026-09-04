@@ -2,14 +2,14 @@
 
 Le workflow actif du projet est **Ubuntu + ROS2 + Gazebo**. CoppeliaSim
 (`torch_run.py` / `zmq_pioneer_simulation.py`) est un chemin legacy antérieur au
-passage sous ROS2 — il reste dans le dépôt mais n'est plus maintenu ni testé.
+passage sous ROS2, il reste dans le dépôt mais n'est plus maintenu ni testé.
 Voir la note en bas de page si vous devez malgré tout le faire tourner.
 
 ## Ubuntu 22.04 + ROS2 Humble (poste de développement)
 
 Cette branche (`diff`) et la branche `ackermann` ciblent Humble. La branche
 `mecanum` doit aussi fonctionner sur ROS2 Foxy (utilisé sur l'un des deux
-robots réels, voir [`ROBOTS.md`](ROBOTS.md)) — le driver C++ gère les deux
+robots réels, voir [`ROBOTS.md`](ROBOTS.md)), le driver C++ gère les deux
 via un include conditionnel (`__has_include`).
 
 ### 1. ROS2 Humble
@@ -67,21 +67,21 @@ d'apprentissage.
 ROS2 et Gazebo ne tournent pas nativement sur macOS. Deux options :
 
 - **Docker/VM Ubuntu 22.04** avec ROS2 Humble installé dedans (suivre les
-  étapes ci-dessus à l'intérieur) — c'est la voie recommandée pour continuer
+  étapes ci-dessus à l'intérieur), c'est la voie recommandée pour continuer
   ce travail sur Mac.
 - Le devcontainer fourni dans `limo_ros2/.devcontainer/` (Dockerfile déjà
-  présent dans le dépôt) — non testé dans le cadre de ce projet, à vérifier
+  présent dans le dépôt), non testé dans le cadre de ce projet, à vérifier
   avant de s'y fier.
 
 Le réseau de neurones (PyTorch) et le logging (`data_logger.py`,
-`monitoring.py`) n'ont eux-mêmes aucune dépendance ROS2 — ils peuvent tourner
+`monitoring.py`) n'ont eux-mêmes aucune dépendance ROS2, ils peuvent tourner
 sur macOS directement si vous voulez juste inspecter/rejouer des CSV de
 sessions déjà enregistrées avec `plot_results.py`.
 
-## Note — CoppeliaSim (legacy, non maintenu)
+## Note : CoppeliaSim (legacy, non maintenu)
 
 `torch_run.py` charge une scène CoppeliaSim (`simu.ttt`) qui n'est **pas**
-versionnée dans ce dépôt (exclue via `.gitignore` — c'était le chemin de
+versionnée dans ce dépôt (exclue via `.gitignore`, c'était le chemin de
 simulation avant le passage à Gazebo). Pour faire revivre ce chemin il
 faudrait recréer/retrouver cette scène et installer :
 
@@ -90,4 +90,4 @@ pip install torch matplotlib PyQt5 pyzmq cbor2 coppeliasim-zmqremoteapi-client
 ```
 
 + CoppeliaSim (Windows/Mac/Linux, téléchargement chez Coppelia Robotics).
-Ce chemin n'est plus la référence du projet — privilégier Gazebo.
+Ce chemin n'est plus la référence du projet, privilégier Gazebo.

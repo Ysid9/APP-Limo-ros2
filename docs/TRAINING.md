@@ -1,10 +1,10 @@
 # Lancer une session d'apprentissage / de test
 
-Branche `diff` — robot différentiel, réseau à 2 sorties (`v_lin`, `v_ang`).
+Branche `diff`, robot différentiel, réseau à 2 sorties (`v_lin`, `v_ang`).
 
 ## En simulation (Gazebo)
 
-**Terminal 1 — lancer Gazebo :**
+**Terminal 1, lancer Gazebo :**
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
@@ -13,7 +13,7 @@ ros2 launch limo_description gazebo_models_diff.launch.py
 Le robot Limo apparaît à la position (0, 0, 0). Le déplacer à la position
 initiale voulue (dans Gazebo, avant de lancer le script) si besoin.
 
-**Terminal 2 — lancer le trainer :**
+**Terminal 2, lancer le trainer :**
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
@@ -26,14 +26,14 @@ Prompts :
 |---|---|
 | `Real robot? (y/n)` | `n` pour Gazebo |
 | `Enable real-time display? (y/n)` | `y` pour afficher les graphes de monitoring en direct |
-| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_diff.json` (poids de la dernière session) — **`n` repart d'un réseau initialisé aléatoirement** (pas de reprise) |
+| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_diff.json` (poids de la dernière session), **`n` repart d'un réseau initialisé aléatoirement** (pas de reprise) |
 | `Do you want to learn? (y/n)` | `y` pour activer la rétropropagation, `n` pour évaluer sans apprendre |
 | `Enter the first target : x y radian` | **toujours `0 0 0`** |
 
 Le robot converge vers la cible. Appuyer sur Entrée pour arrêter la session
 en cours. Entre deux sessions, repositionner le robot manuellement dans
 Gazebo si besoin. En fin de script, choix de sauvegarder les poids
-(`last_w_torch_diff.json`) — supprimer ce fichier pour repartir d'un réseau
+(`last_w_torch_diff.json`), supprimer ce fichier pour repartir d'un réseau
 initialisé aléatoirement au prochain lancement, même en répondant `y`.
 
 Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
@@ -55,7 +55,7 @@ Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ```
    (voir [`INSTALL.md`](INSTALL.md) pour l'installer si absent)
-3. **Apprentissage** — `torch_run_ros2.py` (prompts complets, cible **toujours
+3. **Apprentissage** : `torch_run_ros2.py` (prompts complets, cible **toujours
    `0 0 0`**) ou `torch_run_real.py` (version rapide : robot réel et cible
    `(0,0,0)` systématiques, monitoring auto, pas de prompts de config) :
    ```bash
@@ -68,7 +68,7 @@ Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
 3. Déplacer le robot avec la téléop vers un point de départ éloigné de la cible, puis lancer l'apprentissage (terminal 3).
 4. Dès que le robot atteint la cible, appuyer sur Entrée dans le terminal 3 pour arrêter la session en cours.
 5. Répondre `y` à "Do you want to continue?", repositionner le robot avec la téléop, relancer une nouvelle session.
-6. Répéter 3-5 autant de fois que nécessaire.
+6. Répéter 3 à 5 autant de fois que nécessaire.
 
 Résultats dans `res/robot/run_YYYYMMDD_HHMMSS/` (restent en local sur la
 machine qui a lancé le script).
@@ -105,7 +105,7 @@ cachée. En ajouter une deuxième demande 3 modifications :
    ```
 3. **Attention à la compatibilité des poids** : en changeant le nombre de
    couches cachées, les fichiers `last_w_torch_*.json` déjà sauvegardés ne
-   pourront plus être chargés sur le nouveau réseau — et inversement, les
+   pourront plus être chargés sur le nouveau réseau, et inversement, les
    poids du nouveau réseau ne seront pas compatibles avec l'ancienne
    architecture. Il faut repartir d'un réseau initialisé aléatoirement à
    chaque changement du nombre de couches.
