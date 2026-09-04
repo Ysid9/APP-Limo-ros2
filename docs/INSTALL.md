@@ -1,10 +1,5 @@
 # Installation
 
-Le workflow actif du projet est **Ubuntu + ROS2 + Gazebo**. CoppeliaSim
-(`torch_run.py` / `zmq_pioneer_simulation.py`) est un chemin legacy antérieur au
-passage sous ROS2, il reste dans le dépôt mais n'est plus maintenu ni testé,
-et n'a de toute façon jamais géré le mode mecanum (2 sorties seulement).
-
 ## Ubuntu 22.04 + ROS2 : Humble ou Foxy
 
 Cette branche (`mecanum`) doit fonctionner sur **les deux** distributions :
@@ -78,10 +73,3 @@ Le réseau de neurones (PyTorch) et le logging (`data_logger.py`,
 `monitoring.py`) n'ont eux-mêmes aucune dépendance ROS2, ils peuvent tourner
 sur macOS directement si vous voulez juste inspecter/rejouer des CSV de
 sessions déjà enregistrées avec `plot_results.py`.
-
-## Note : CoppeliaSim (legacy, non maintenu, pas de mode mecanum)
-
-`torch_run.py` charge une scène CoppeliaSim (`simu.ttt`) qui n'est **pas**
-versionnée dans ce dépôt (exclue via `.gitignore`). Ce chemin ne gère de
-toute façon que 2 sorties (robot Pioneer différentiel), sans intérêt pour
-tester le mode mecanum. Privilégier le robot réel.

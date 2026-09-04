@@ -6,6 +6,3 @@ res_monitoring/
 results/
 last_w_*.json
 weights_*.json
-zmqRemoteApi/
-simu.ttt
-simu_ros_limo.ttt
