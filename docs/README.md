@@ -7,11 +7,15 @@ appliqué à un robot mobile AgileX Limo — en simulation (Gazebo) ou sur robot
 Le même algorithme d'apprentissage existe en plusieurs variantes selon le mode de
 déplacement du robot, chacune sur sa propre branche git :
 
-| Branche | Mode | Sorties réseau | État |
-|---|---|---|---|
-| [`diff`](../../tree/diff) | Différentiel (2 roues motrices, non-holonome) | `v_lin, v_ang` (2) | Référence, stable |
-| [`mecanum`](../../tree/mecanum) | Mecanum (4 roues, holonome) | `v_lin, v_lat, v_ang` (3) | Référence, stable |
-| [`ackermann`](../../tree/ackermann) | Ackermann (direction façon voiture) | `v_lin, v_ang` (2) | **Non commencé** |
+| Branche | Mode | Sorties réseau | Simulation Gazebo | État |
+|---|---|---|---|---|
+| [`diff`](../../tree/diff) | Différentiel (2 roues motrices, non-holonome) | `v_lin, v_ang` (2) | ✅ Disponible | Référence, stable |
+| [`mecanum`](../../tree/mecanum) | Mecanum (4 roues, holonome) | `v_lin, v_lat, v_ang` (3) | ❌ Pas de modèle officiel | Référence, stable sur robot réel |
+| [`ackermann`](../../tree/ackermann) | Ackermann (direction façon voiture) | `v_lin, v_ang` (2) | ❌ Pas de modèle officiel | **Non commencé** |
+
+Il n'existe pas de modèle Gazebo officiel pour l'Ackermann ni le mecanum — la
+simulation n'est pas possible pour ces deux modes actuellement, seul le robot
+réel permet de tester.
 
 **Vous êtes sur la branche `ackermann`.** Elle a été créée depuis `diff` (même
 lignage historique : le projet avait un mode Ackermann avant le commit

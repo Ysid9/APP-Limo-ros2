@@ -8,6 +8,11 @@ voir [`README.md`](README.md).
 
 ## En simulation (Gazebo)
 
+⚠️ Pas de modèle Gazebo officiel pour l'Ackermann — la simulation n'est pas
+possible actuellement pour ce mode (la section ci-dessous est héritée de
+`diff` et lance en réalité le modèle différentiel, pas un Ackermann). Voir
+directement "Sur robot réel" plus bas.
+
 **Terminal 1 — lancer Gazebo :**
 ```bash
 source /opt/ros/humble/setup.bash
