@@ -64,14 +64,14 @@ Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
 
 **Procédure d'une session de terrain :**
 1. Positionner le robot physiquement à `(0, 0, 0)` (repère de référence, terminal 2 = téléop).
-2. Lancer le driver (terminal 1) puis l'apprentissage (terminal 3).
-3. Déplacer le robot avec la téléop vers un point de départ éloigné de la cible.
+2. Lancer le driver (terminal 1).
+3. Déplacer le robot avec la téléop vers un point de départ éloigné de la cible, puis lancer l'apprentissage (terminal 3).
 4. Dès que le robot atteint la cible, appuyer sur Entrée dans le terminal 3 pour arrêter la session en cours.
 5. Répondre `y` à "Do you want to continue?", repositionner le robot avec la téléop, relancer une nouvelle session.
 6. Répéter 3-5 autant de fois que nécessaire.
 
 Résultats dans `res/robot/run_YYYYMMDD_HHMMSS/` (restent en local sur la
-machine qui a lancé le script — aucun envoi automatique ailleurs).
+machine qui a lancé le script).
 
 ## Rejouer un CSV existant
 
