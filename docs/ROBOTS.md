@@ -11,14 +11,27 @@ au moment de la rédaction — chaque `scp`/`ssh` redemande le mot de passe).
 | Workspace ROS2 actif | `~/agilex_ws` | `~/limo_ros2_ws` ⚠️ `~/agilex_ws` sur cette machine est un workspace **ROS1** différent (paquet `limo_ros`, pas `limo_ros2`) — ne pas confondre |
 | Scripts Python (mecanum) | `~/mecanum_torch` | `~/mecanum_torch` |
 | Scripts Python (diff) | `~/Downloads/APP-Limo_ros2_curr` | `~/Downloads/APP-Limo_ros2_curr` |
-| Port série MCU | `/dev/ttyUSB1` (pas `ttyUSB0`) | non vérifié |
+| Port série MCU | `/dev/ttyUSB1` (CP2102, confirmé) | `/dev/ttyUSB0` (pas de `ttyUSB1` sur cette machine) |
 
 Chaque robot n'a que ces emplacements-là pour le code — pas de copies
 parallèles/obsolètes à ce jour (nettoyage fait en 2026-09).
 
-PC de développement : `cerv@192.168.1.241` — les scripts robot y renvoient
-leurs résultats de session par `scp` en fin de run (adresse codée en dur
-dans `torch_run_ros2.py`/`torch_run_real.py`, à adapter si ce PC change).
+⚠️ Le port série par défaut de `limo_base.launch.py` est `ttyUSB1` — ça
+fonctionne tel quel sur `.111`, mais sur `.113` il faut le préciser
+explicitement :
+```bash
+ros2 launch limo_base limo_base.launch.py port_name:=ttyUSB0
+```
+Sur `.111`, un lien symbolique udev persistant existe aussi :
+`/dev/ttylimo` (basé sur l'identité USB du CP2102, stable même si
+l'énumération `ttyUSBx` change) — `port_name:=ttylimo` fonctionne également.
+
+PC de développement : `cerv@192.168.1.241`. Les résultats de session
+(`res/robot/run_.../`) restent en local sur la machine qui a lancé le
+script — pas d'envoi automatique. Pour les récupérer manuellement :
+```bash
+scp -r agilex@192.168.1.111:~/mecanum_torch/res/robot/run_XXXX ./
+```
 
 ## Déployer une modification du driver C++ (`limo_ros2`)
 

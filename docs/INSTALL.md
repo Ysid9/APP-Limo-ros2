@@ -32,8 +32,13 @@ sudo apt install \
   ros-humble-desktop \
   ros-humble-gazebo-ros-pkgs \
   ros-humble-joint-state-publisher-gui \
+  ros-humble-teleop-twist-keyboard \
   python3-colcon-common-extensions
 ```
+
+`ros-humble-teleop-twist-keyboard` (remplacer `humble` par `foxy` sur une
+machine Foxy) sert à repositionner le robot manuellement entre deux
+sessions d'apprentissage sur robot réel (voir [`TRAINING.md`](TRAINING.md)).
 
 ### 2. Dépendances Python
 

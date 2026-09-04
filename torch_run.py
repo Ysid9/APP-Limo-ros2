@@ -50,12 +50,12 @@ if display_choice.lower() == 'y':
 choice = input('Do you want to load previous network? (y/n) --> ')
 if choice == 'y':
     try:
-        with open('last_w_torch_3in.json') as fp:
+        with open('last_w_torch_pioneer.json') as fp:
             json_obj = json.load(fp)
         network.load_weights_from_json(json_obj)
-        print("Weights loaded from last_w_torch_3in.json")
+        print("Weights loaded from last_w_torch_pioneer.json")
     except FileNotFoundError:
-        print("No weight file found (last_w_torch_3in.json), starting with random weights.")
+        print("No weight file found (last_w_torch_pioneer.json), starting with random weights.")
     
 
 # Initialiser le trainer PyTorch avec monitoring
@@ -130,9 +130,9 @@ while save_choice.lower() not in ['y', 'n']:
 
 if save_choice.lower() == 'y':
     json_obj = network.save_weights_to_json()
-    with open('last_w_torch_3in.json', 'w') as fp:
+    with open('last_w_torch_pioneer.json', 'w') as fp:
         json.dump(json_obj, fp)
-    print("Weights saved to last_w_torch_3in.json")
+    print("Weights saved to last_w_torch_pioneer.json")
 else:
     print("Weights not saved.")
 

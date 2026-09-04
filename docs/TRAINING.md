@@ -12,8 +12,8 @@ source ~/ros2_ws/install/setup.bash
 ros2 launch limo_description gazebo_models_mcnamu.launch.py
 ```
 Le robot Limo (modèle mecanum) apparaît à la position (0, 0, 0). Le
-déplacer à la position initiale voulue avant de lancer le script si la
-cible n'est pas l'origine.
+déplacer à la position initiale voulue (dans Gazebo, avant de lancer le
+script) si besoin.
 
 **Terminal 2 — lancer le trainer :**
 ```bash
@@ -28,43 +28,53 @@ Prompts :
 |---|---|
 | `Real robot? (y/n)` | `n` pour Gazebo |
 | `Enable real-time display? (y/n)` | `y` pour afficher les graphes de monitoring en direct (v_lin/v_lat/v_ang, 4 vitesses de roues) |
-| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_mcnamu.json` (poids de la dernière session) |
+| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_mecanum.json` (poids de la dernière session) — **`n` repart d'un réseau initialisé aléatoirement** (pas de reprise) |
 | `Do you want to learn? (y/n)` | `y` pour activer la rétropropagation, `n` pour évaluer sans apprendre |
-| `Enter the first target : x y radian` | ex : `0 0 0` — le mode étant holonome, une cible hors de l'axe avant du robot est correctement gérée (pas besoin d'orienter le robot vers la cible au préalable) |
+| `Enter the first target : x y radian` | **toujours `0 0 0`** — le mode étant holonome, une cible hors de l'axe avant du robot est correctement gérée (pas besoin d'orienter le robot vers la cible au préalable) |
 
 Le robot converge vers la cible. Appuyer sur Entrée pour arrêter la session
 en cours. En fin de script, choix de sauvegarder les poids
-(`last_w_torch_mcnamu.json`) — supprimer ce fichier pour repartir d'un
-réseau initialisé aléatoirement.
+(`last_w_torch_mecanum.json`) — supprimer ce fichier pour repartir d'un
+réseau initialisé aléatoirement au prochain lancement, même en répondant `y`.
 
 Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
 
 ## Sur robot réel
 
-Deux scripts possibles :
+**Trois terminaux nécessaires**, dans cet ordre :
 
-- **`torch_run_ros2.py`** (même script que ci-dessus, répondre `y` à
-  "Real robot?") — cible et paramètres au choix à chaque prompt.
-- **`torch_run_real.py`** — version rapide : robot réel systématique, cible
-  toujours fixée à `(0, 0, 0)`, monitoring activé automatiquement, garde-fous
-  de vitesse actifs (`v_lin`/`v_lat` limités à ±0.3 m/s, `v_ang` à ±0.8 rad/s
-  dans `ros2_limo_interface.py`). À privilégier pour un test rapide sans
-  repasser par tous les prompts.
+1. **Driver du robot, en mode mecanum explicitement** (sinon le robot reste
+   en mode différentiel par défaut et ignore `v_lat`) :
+   ```bash
+   ros2 launch limo_base limo_base.launch.py use_mcnamu:=true
+   ```
+   Sur `.113`, ajouter aussi `port_name:=ttyUSB0` (voir [`ROBOTS.md`](ROBOTS.md)) :
+   ```bash
+   ros2 launch limo_base limo_base.launch.py use_mcnamu:=true port_name:=ttyUSB0
+   ```
+2. **Téléopération** (pour repositionner le robot entre les sessions) :
+   ```bash
+   ros2 run teleop_twist_keyboard teleop_twist_keyboard
+   ```
+   (voir [`INSTALL.md`](INSTALL.md) pour l'installer si absent)
+3. **Apprentissage** — `torch_run_ros2.py` (prompts complets, cible **toujours
+   `0 0 0`**) ou `torch_run_real.py` (version rapide : robot réel et cible
+   `(0,0,0)` systématiques, monitoring auto, garde-fous de vitesse actifs
+   — `v_lin`/`v_lat` limités à ±0.3 m/s, `v_ang` à ±0.8 rad/s) :
+   ```bash
+   python3 torch_run_ros2.py     # ou torch_run_real.py
+   ```
 
-Avant de lancer, le driver du robot doit tourner **en mode mecanum
-explicitement** (`use_mcnamu:=true`, sinon le robot reste en mode
-différentiel par défaut et ignore `v_lat`) :
-```bash
-ros2 launch limo_base limo_base.launch.py use_mcnamu:=true
-```
-Argument utile : `port_name:=ttyUSB1` si le port série par défaut ne
-correspond pas (voir [`ROBOTS.md`](ROBOTS.md) pour le port réel de chaque
-robot).
+**Procédure d'une session de terrain :**
+1. Positionner le robot physiquement à `(0, 0, 0)` (repère de référence, terminal 2 = téléop).
+2. Lancer le driver (terminal 1) puis l'apprentissage (terminal 3).
+3. Déplacer le robot avec la téléop vers un point de départ éloigné de la cible.
+4. Dès que le robot atteint la cible, appuyer sur Entrée dans le terminal 3 pour arrêter la session en cours.
+5. Répondre `y` à "Do you want to continue?", repositionner le robot avec la téléop, relancer une nouvelle session.
+6. Répéter 3-5 autant de fois que nécessaire.
 
-Résultats dans `res/robot/run_YYYYMMDD_HHMMSS/`. En fin de session,
-`torch_run_ros2.py`/`torch_run_real.py` proposent d'envoyer ce dossier vers
-le PC de dev par `scp` (adresse codée en dur en tête de script — à adapter
-si le PC de destination change).
+Résultats dans `res/robot/run_YYYYMMDD_HHMMSS/` (restent en local sur la
+machine qui a lancé le script — aucun envoi automatique ailleurs).
 
 ## Rejouer un CSV existant
 
@@ -82,3 +92,26 @@ réelles du Limo (empattement 0.2 m, voie 0.172 m) — visibles dans le graphe
 HL_size       = 1000   # taille de la couche cachée du réseau
 LEARNING_RATE = 0.2    # pas d'apprentissage
 ```
+
+### Ajouter une couche cachée supplémentaire
+
+Le réseau (`torch_back.py`, classe `PioneerNN`) n'a qu'une seule couche
+cachée. En ajouter une deuxième demande 3 modifications :
+
+1. Dans `__init__`, ajouter la couche et son initialisation :
+   ```python
+   self.hidden2 = nn.Linear(hidden_size, hidden_size2)
+   nn.init.xavier_uniform_(self.hidden2.weight)
+   nn.init.zeros_(self.hidden2.bias)
+   ```
+2. Dans `forward`, l'insérer entre la couche cachée existante et la sortie :
+   ```python
+   x = self.activation(self.hidden(x))
+   x = self.activation(self.hidden2(x))
+   x = self.activation(self.output(x))
+   ```
+3. **`load_weights_from_json`/`save_weights_to_json`** sont écrits pour
+   exactement 2 couches (clés `"input_weights"`/`"output_weights"`) — il
+   faut y ajouter une clé `"hidden2_weights"` gérée symétriquement, sinon
+   les fichiers `last_w_torch_*.json` existants ne sont plus compatibles
+   avec le nouveau réseau (il faudra repartir de poids aléatoires).
