@@ -107,8 +107,9 @@ cachée. En ajouter une deuxième demande 3 modifications :
    x = self.activation(self.hidden2(x))
    x = self.activation(self.output(x))
    ```
-3. **`load_weights_from_json`/`save_weights_to_json`** sont écrits pour
-   exactement 2 couches (clés `"input_weights"`/`"output_weights"`) — il
-   faut y ajouter une clé `"hidden2_weights"` gérée symétriquement, sinon
-   les fichiers `last_w_torch_*.json` existants ne sont plus compatibles
-   avec le nouveau réseau (il faudra repartir de poids aléatoires).
+3. **Attention à la compatibilité des poids** : en changeant le nombre de
+   couches cachées, les fichiers `last_w_torch_*.json` déjà sauvegardés ne
+   pourront plus être chargés sur le nouveau réseau — et inversement, les
+   poids du nouveau réseau ne seront pas compatibles avec l'ancienne
+   architecture. Il faut repartir d'un réseau initialisé aléatoirement à
+   chaque changement du nombre de couches.
