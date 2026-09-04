@@ -7,7 +7,6 @@ torch_run_real.py  —  version rapide pour tests sur robot réel
 """
 import json
 import os
-import subprocess
 import threading
 import atexit
 import time
@@ -23,9 +22,6 @@ except Exception:
     MONITORING_AVAILABLE = False
 
 WORLD_BOUNDS = (-10, 10, -10, 10)
-PC_USER = 'cerv'
-PC_IP   = '192.168.1.241'
-PC_DEST = '/home/cerv/Downloads/APP-Limo_ros2_curr/res/'
 TARGET  = [0.0, 0.0, 0.0]
 
 rclpy.init()
@@ -65,10 +61,10 @@ while choice.lower() not in ('y', 'n'):
     choice = input('Do you want to load previous network? (y/n) --> ')
 if choice.lower() == 'y':
     try:
-        with open('last_w_torch_3in.json') as fp:
+        with open('last_w_torch_ackermann.json') as fp:
             json_obj = json.load(fp)
         network.load_weights_from_json(json_obj)
-        print("Weights loaded from last_w_torch_3in.json")
+        print("Weights loaded from last_w_torch_ackermann.json")
     except FileNotFoundError:
         print("No weight file found, starting with random weights.")
 
@@ -119,23 +115,11 @@ while save_choice.lower() not in ('y', 'n'):
     save_choice = input("Do you want to save the weights? (y/n) --> ")
 if save_choice.lower() == 'y':
     json_obj = network.save_weights_to_json()
-    with open('last_w_torch_3in.json', 'w') as fp:
+    with open('last_w_torch_ackermann.json', 'w') as fp:
         json.dump(json_obj, fp)
-    print("Weights saved to last_w_torch_3in.json")
+    print("Weights saved to last_w_torch_ackermann.json")
 
 if MONITORING_AVAILABLE:
     mode = "training" if trainer.training else "eval"
     monitor.save_results(f"{mode}_final_{time.strftime('%Y%m%d_%H%M%S')}",
                          results_dir=run_dir, final=True)
-
-send_choice = ''
-while send_choice.lower() not in ('y', 'n'):
-    send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
-if send_choice.lower() == 'y':
-    dest = f"{PC_USER}@{PC_IP}:{PC_DEST}robot/"
-    print(f"Sending {run_dir} → {dest}")
-    result = subprocess.run(['scp', '-r', run_dir, dest])
-    if result.returncode == 0:
-        print("Transfer complete.")
-    else:
-        print("Transfer failed — check SSH/SCP access to the PC.")
