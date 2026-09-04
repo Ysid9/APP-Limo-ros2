@@ -1,47 +1,10 @@
 # Lancer une session d'apprentissage / de test
 
-Branche `mecanum` — robot mecanum (4 roues omnidirectionnelles), réseau à 3 sorties
+Branche `mecanum`, robot mecanum (4 roues omnidirectionnelles), réseau à 3 sorties
 (`v_lin`, `v_lat`, `v_ang`).
 
-## En simulation (Gazebo)
-
-⚠️ Pas de modèle Gazebo officiel pour le mecanum — la simulation n'est pas
-possible actuellement pour ce mode, voir directement "Sur robot réel"
-ci-dessous.
-
-**Terminal 1 — lancer Gazebo en mode mecanum :**
-```bash
-source /opt/ros/humble/setup.bash   # ou foxy
-source ~/ros2_ws/install/setup.bash
-ros2 launch limo_description gazebo_models_mcnamu.launch.py
-```
-Le robot Limo (modèle mecanum) apparaît à la position (0, 0, 0). Le
-déplacer à la position initiale voulue (dans Gazebo, avant de lancer le
-script) si besoin.
-
-**Terminal 2 — lancer le trainer :**
-```bash
-source /opt/ros/humble/setup.bash   # ou foxy
-source ~/ros2_ws/install/setup.bash
-cd /chemin/vers/ce/depot
-python3 torch_run_ros2.py
-```
-
-Prompts :
-| Prompt | Réponse |
-|---|---|
-| `Real robot? (y/n)` | `n` pour Gazebo |
-| `Enable real-time display? (y/n)` | `y` pour afficher les graphes de monitoring en direct (v_lin/v_lat/v_ang, 4 vitesses de roues) |
-| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_mecanum.json` (poids de la dernière session) — **`n` repart d'un réseau initialisé aléatoirement** (pas de reprise) |
-| `Do you want to learn? (y/n)` | `y` pour activer la rétropropagation, `n` pour évaluer sans apprendre |
-| `Enter the first target : x y radian` | **toujours `0 0 0`** — le mode étant holonome, une cible hors de l'axe avant du robot est correctement gérée (pas besoin d'orienter le robot vers la cible au préalable) |
-
-Le robot converge vers la cible. Appuyer sur Entrée pour arrêter la session
-en cours. En fin de script, choix de sauvegarder les poids
-(`last_w_torch_mecanum.json`) — supprimer ce fichier pour repartir d'un
-réseau initialisé aléatoirement au prochain lancement, même en répondant `y`.
-
-Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
+Pas de modèle Gazebo officiel pour le mecanum, la simulation n'est pas
+possible actuellement pour ce mode : tout se fait sur robot réel.
 
 ## Sur robot réel
 
@@ -61,13 +24,22 @@ Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ```
    (voir [`INSTALL.md`](INSTALL.md) pour l'installer si absent)
-3. **Apprentissage** — `torch_run_ros2.py` (prompts complets, cible **toujours
-   `0 0 0`**) ou `torch_run_real.py` (version rapide : robot réel et cible
-   `(0,0,0)` systématiques, monitoring auto, garde-fous de vitesse actifs
-   — `v_lin`/`v_lat` limités à ±0.3 m/s, `v_ang` à ±0.8 rad/s) :
+3. **Apprentissage** : `torch_run_ros2.py` (prompts complets) ou
+   `torch_run_real.py` (version rapide : robot réel et cible `(0,0,0)`
+   systématiques, monitoring auto, garde-fous de vitesse actifs, `v_lin`/`v_lat`
+   limités à ±0.3 m/s, `v_ang` à ±0.8 rad/s) :
    ```bash
    python3 torch_run_ros2.py     # ou torch_run_real.py
    ```
+
+Prompts de `torch_run_ros2.py` :
+| Prompt | Réponse |
+|---|---|
+| `Real robot? (y/n)` | `y` |
+| `Enable real-time display? (y/n)` | `y` pour afficher les graphes de monitoring en direct (v_lin/v_lat/v_ang, 4 vitesses de roues) |
+| `Do you want to load previous network? (y/n)` | `y` pour charger `last_w_torch_mecanum.json` (poids de la dernière session), **`n` repart d'un réseau initialisé aléatoirement** (pas de reprise) |
+| `Do you want to learn? (y/n)` | `y` pour activer la rétropropagation, `n` pour évaluer sans apprendre |
+| `Enter the first target : x y radian` | **toujours `0 0 0`**, le mode étant holonome, une cible hors de l'axe avant du robot est correctement gérée (pas besoin d'orienter le robot vers la cible au préalable) |
 
 **Procédure d'une session de terrain :**
 1. Positionner le robot physiquement à `(0, 0, 0)` (repère de référence, terminal 2 = téléop).
@@ -75,7 +47,11 @@ Résultats (CSV + graphes) dans `res/gazebo/run_YYYYMMDD_HHMMSS/`.
 3. Déplacer le robot avec la téléop vers un point de départ éloigné de la cible, puis lancer l'apprentissage (terminal 3).
 4. Dès que le robot atteint la cible, appuyer sur Entrée dans le terminal 3 pour arrêter la session en cours.
 5. Répondre `y` à "Do you want to continue?", repositionner le robot avec la téléop, relancer une nouvelle session.
-6. Répéter 3-5 autant de fois que nécessaire.
+6. Répéter 3 à 5 autant de fois que nécessaire.
+
+En fin de script, choix de sauvegarder les poids (`last_w_torch_mecanum.json`),
+supprimer ce fichier pour repartir d'un réseau initialisé aléatoirement au
+prochain lancement, même en répondant `y`.
 
 Résultats dans `res/robot/run_YYYYMMDD_HHMMSS/` (restent en local sur la
 machine qui a lancé le script).
@@ -87,7 +63,7 @@ python3 plot_results.py res/robot/run_20260825_200942/eval_session_1_20260825_20
 ```
 `data_logger.py` recalcule aussi la cinématique inverse 4 roues
 (`v_wheel_fl/fr/rl/rr`) à partir de `v_lin, v_lat, v_ang` et des dimensions
-réelles du Limo (empattement 0.2 m, voie 0.172 m) — visibles dans le graphe
+réelles du Limo (empattement 0.2 m, voie 0.172 m), visibles dans le graphe
 "Vitesses roues mecanum".
 
 ## Paramètres modifiables (`torch_run_ros2.py`)
@@ -116,7 +92,7 @@ cachée. En ajouter une deuxième demande 3 modifications :
    ```
 3. **Attention à la compatibilité des poids** : en changeant le nombre de
    couches cachées, les fichiers `last_w_torch_*.json` déjà sauvegardés ne
-   pourront plus être chargés sur le nouveau réseau — et inversement, les
+   pourront plus être chargés sur le nouveau réseau, et inversement, les
    poids du nouveau réseau ne seront pas compatibles avec l'ancienne
    architecture. Il faut repartir d'un réseau initialisé aléatoirement à
    chaque changement du nombre de couches.

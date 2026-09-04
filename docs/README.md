@@ -1,19 +1,19 @@
-# APP-Limo — contrôleur en ligne (apprentissage par gradient) pour robot AgileX Limo
+# APP-Limo : contrôleur en ligne (apprentissage par gradient) pour robot AgileX Limo
 
 Ce dépôt contient un contrôleur de position par réseau de neurones entraîné en ligne
 (descente de gradient manuelle sur une fonction de coût quadratique position+orientation),
-appliqué à un robot mobile AgileX Limo — en simulation (Gazebo) ou sur robot réel.
+appliqué à un robot mobile AgileX Limo, en simulation (Gazebo) ou sur robot réel.
 
 Le même algorithme d'apprentissage existe en plusieurs variantes selon le mode de
 déplacement du robot, chacune sur sa propre branche git :
 
 | Branche | Mode | Sorties réseau | Simulation Gazebo | État |
 |---|---|---|---|---|
-| [`diff`](../../tree/diff) | Différentiel (2 roues motrices, non-holonome) | `v_lin, v_ang` (2) | ✅ Disponible | Référence, stable |
-| [`mecanum`](../../tree/mecanum) | Mecanum (4 roues, holonome) | `v_lin, v_lat, v_ang` (3) | ❌ Pas de modèle officiel | Référence, stable sur robot réel |
-| [`ackermann`](../../tree/ackermann) | Ackermann (direction façon voiture) | `v_lin, v_ang` (2) | ❌ Pas de modèle officiel | Non commencé — branché depuis `diff` |
+| [`diff`](../../tree/diff) | Différentiel (2 roues motrices, non-holonome) | `v_lin, v_ang` (2) | Oui | Référence, stable |
+| [`mecanum`](../../tree/mecanum) | Mecanum (4 roues, holonome) | `v_lin, v_lat, v_ang` (3) | Non, pas de modèle officiel | Référence, stable sur robot réel |
+| [`ackermann`](../../tree/ackermann) | Ackermann (direction façon voiture) | `v_lin, v_ang` (2) | Non, pas de modèle officiel | Non commencé, branché depuis `diff` |
 
-Il n'existe pas de modèle Gazebo officiel pour l'Ackermann ni le mecanum — la
+Il n'existe pas de modèle Gazebo officiel pour l'Ackermann ni le mecanum, la
 simulation n'est pas possible pour ces deux modes actuellement, seul le robot
 réel permet de tester.
 
@@ -24,15 +24,15 @@ change, c'est le nombre de sorties du réseau, la cinématique du robot dans
 
 Spécifique à cette branche : le robot peut se déplacer latéralement
 (`v_lat`), donc l'orientation n'a plus besoin d'être alignée avec la
-direction de déplacement — voir le calcul de gradient dans `torch_online.py`
+direction de déplacement. Voir le calcul de gradient dans `torch_online.py`
 (rotation du repère robot vers le repère monde en `v_x, v_y`) et la
 cinématique inverse 4 roues dans `data_logger.py` (`v_wheel_fl/fr/rl/rr`).
 
 ## Pour commencer
 
-1. [`INSTALL.md`](INSTALL.md) — installer l'environnement (ROS2, Gazebo, dépendances Python)
-2. [`TRAINING.md`](TRAINING.md) — lancer une session d'apprentissage/test, en simulation ou sur robot réel
-3. [`ROBOTS.md`](ROBOTS.md) — se connecter aux robots physiques et déployer une modification du driver
+1. [`INSTALL.md`](INSTALL.md) : installer l'environnement (ROS2, Gazebo, dépendances Python)
+2. [`TRAINING.md`](TRAINING.md) : lancer une session d'apprentissage/test, en simulation ou sur robot réel
+3. [`ROBOTS.md`](ROBOTS.md) : se connecter aux robots physiques et déployer une modification du driver
 
 ## Structure du dépôt
 
