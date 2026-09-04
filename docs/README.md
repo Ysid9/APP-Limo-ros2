@@ -36,8 +36,6 @@ torch_online.py          boucle d'apprentissage en ligne (coût, gradient, backw
 data_logger.py           logging CSV des sessions
 monitoring.py            visualisation temps réel (matplotlib)
 ros2_limo_interface.py   interface ROS2 (/odom -> position, /cmd_vel -> commande)
-zmq_pioneer_simulation.py interface CoppeliaSim -- LEGACY, voir note dans INSTALL.md
-torch_run.py             lancement CoppeliaSim (Pioneer) -- LEGACY
 torch_run_ros2.py        lancement ROS2 (Gazebo ou robot réel, au choix au démarrage)
 torch_run_real.py        lancement rapide sur robot réel (cible fixe à l'origine)
 plot_results.py          regénérer un graphe à partir d'un CSV de session existant
