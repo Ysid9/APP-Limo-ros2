@@ -57,8 +57,16 @@ pip install torch matplotlib PyQt5
 mkdir -p ~/ros2_ws/src
 cp -r /chemin/vers/ce/depot/limo_ros2 ~/ros2_ws/src/
 
-# charge l'environnement ROS2 et compile le paquet
+# installe automatiquement les dépendances système déclarées par les
+# paquets ROS2 (tf2, turtlesim, xacro, rviz2, etc.), au cas où l'une
+# d'elles ne serait pas déjà couverte par ros-*-desktop
+sudo apt install python3-rosdep
+sudo rosdep init   # une seule fois par machine, ignorer l'erreur si déjà fait
+rosdep update
 cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+
+# charge l'environnement ROS2 et compile le paquet
 source /opt/ros/humble/setup.bash   # ou foxy
 colcon build
 
@@ -70,3 +78,14 @@ source ~/.bashrc
 
 Ensuite, voir [`TRAINING.md`](TRAINING.md) pour lancer Gazebo et une session
 d'apprentissage.
+
+### 4. Dépendances optionnelles (scripts de visualisation)
+
+Pas nécessaires pour l'apprentissage/test (`torch_run_ros2.py`,
+`torch_run_real.py`) : seuls `odom_plot.py` (tracé d'odométrie en direct) et
+`visualize_cost.py` (paysage de coût appris) en ont besoin.
+
+```bash
+sudo apt install python3-tk
+pip install numpy plotly
+```
