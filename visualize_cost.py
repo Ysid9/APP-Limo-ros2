@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from torch_back import PioneerNN
 
 # ── Paramètres ───────────────────────────────────────────────────────────────
-WEIGHT_FILE = 'last_w_torch_3in.json'
+WEIGHT_FILE = 'last_w_torch_diff.json'
 TARGET      = [0.0, 0.0, 0.0]
 THETA_ROBOT = 0.0
 EXTENT      = 3.0

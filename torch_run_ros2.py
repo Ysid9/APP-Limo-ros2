@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 import threading
 import atexit
 import time
@@ -16,9 +15,6 @@ except Exception:
     MONITORING_AVAILABLE = False
 
 WORLD_BOUNDS = (-10, 10, -10, 10)
-PC_USER = 'cerv'
-PC_IP   = '192.168.1.241'
-PC_DEST = '/home/cerv/Downloads/APP-Limo_ros2_curr/res/'
 
 rclpy.init()
 real_robot = ''
@@ -67,12 +63,12 @@ while choice.lower() not in ('y', 'n'):
     choice = input('Do you want to load previous network? (y/n) --> ')
 if choice.lower() == 'y':
     try:
-        with open('last_w_torch_3in.json') as fp:
+        with open('last_w_torch_diff.json') as fp:
             json_obj = json.load(fp)
         network.load_weights_from_json(json_obj)
-        print("Weights loaded from last_w_torch_3in.json")
+        print("Weights loaded from last_w_torch_diff.json")
     except FileNotFoundError:
-        print("No weight file found (last_w_torch_3in.json), starting with random weights.")
+        print("No weight file found (last_w_torch_diff.json), starting with random weights.")
 
 monitor_instance = monitor if display_choice.lower() == 'y' else None
 logger = DataLogger()
@@ -138,9 +134,9 @@ while save_choice.lower() not in ('y', 'n'):
 
 if save_choice.lower() == 'y':
     json_obj = network.save_weights_to_json()
-    with open('last_w_torch_3in.json', 'w') as fp:
+    with open('last_w_torch_diff.json', 'w') as fp:
         json.dump(json_obj, fp)
-    print("Weights saved to last_w_torch_3in.json")
+    print("Weights saved to last_w_torch_diff.json")
 else:
     print("Weights not saved.")
 
@@ -150,15 +146,3 @@ if display_choice.lower() == 'y':
                          results_dir=run_dir,
                          final=True)
 
-if is_real_robot:
-    send_choice = ''
-    while send_choice.lower() not in ('y', 'n'):
-        send_choice = input(f"Send {run_dir} to PC? (y/n) --> ")
-    if send_choice.lower() == 'y':
-        dest = f"{PC_USER}@{PC_IP}:{PC_DEST}{subdir}/"
-        print(f"Sending {run_dir} → {dest}")
-        result = subprocess.run(['scp', '-r', run_dir, dest])
-        if result.returncode == 0:
-            print("Transfer complete.")
-        else:
-            print("Transfer failed — check SSH/SCP access to the PC.")
