@@ -1,6 +1,6 @@
 # Lancer une session d'apprentissage / de test
 
-Branche `mecanum` — robot mecanum (4 roues holonomes), réseau à 3 sorties
+Branche `mecanum` — robot mecanum (4 roues omnidirectionnelles), réseau à 3 sorties
 (`v_lin`, `v_lat`, `v_ang`).
 
 ## En simulation (Gazebo)
