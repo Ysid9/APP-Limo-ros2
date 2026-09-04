@@ -2,9 +2,10 @@
 
 ## Ubuntu 22.04 + ROS2 : Humble ou Foxy
 
-Cette branche (`mecanum`) doit fonctionner sur **les deux** distributions :
-c'est celle utilisée en pratique sur les deux robots réels, l'un en Humble,
-l'autre en Foxy.
+Les 3 branches (`diff`, `mecanum`, `ackermann`) fonctionnent aussi bien sous
+Humble que sous Foxy, le driver C++ gère les deux distributions de façon
+identique. Le poste de développement tourne sous Humble ; les deux robots
+réels utilisent l'un Humble, l'autre Foxy (voir [`ROBOTS.md`](ROBOTS.md)).
 
 ### 1. ROS2 (exemple Humble, remplacer `humble` par `foxy` si besoin)
 
