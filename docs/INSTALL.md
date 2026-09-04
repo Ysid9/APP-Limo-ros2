@@ -1,10 +1,13 @@
 # Installation
 
-## Ubuntu 22.04 + ROS2 Humble (poste de développement)
+## Ubuntu 22.04 + ROS2 : Humble ou Foxy
 
-Cette branche (`diff`) et la branche `ackermann` ciblent Humble.
+Les 3 branches (`diff`, `mecanum`, `ackermann`) fonctionnent aussi bien sous
+Humble que sous Foxy, le driver C++ gère les deux distributions de façon
+identique. Le poste de développement tourne sous Humble ; les deux robots
+réels utilisent l'un Humble, l'autre Foxy (voir [`ROBOTS.md`](ROBOTS.md)).
 
-### 1. ROS2 Humble
+### 1. ROS2 (exemple Humble, remplacer `humble` par `foxy` si besoin)
 
 ```bash
 # outils nécessaires pour ajouter un dépôt apt tiers
@@ -32,9 +35,9 @@ sudo apt install \
   python3-colcon-common-extensions
 ```
 
-`ros-humble-teleop-twist-keyboard` sert à repositionner le robot manuellement
-entre deux sessions d'apprentissage sur robot réel (voir
-[`TRAINING.md`](TRAINING.md)).
+`ros-humble-teleop-twist-keyboard` (remplacer `humble` par `foxy` sur une
+machine Foxy) sert à repositionner le robot manuellement entre deux
+sessions d'apprentissage sur robot réel (voir [`TRAINING.md`](TRAINING.md)).
 
 ### 2. Dépendances Python
 
@@ -51,11 +54,11 @@ cp -r /chemin/vers/ce/depot/limo_ros2 ~/ros2_ws/src/
 
 # charge l'environnement ROS2 et compile le paquet
 cd ~/ros2_ws
-source /opt/ros/humble/setup.bash
+source /opt/ros/humble/setup.bash   # ou foxy
 colcon build
 
 # source ROS2 et le workspace automatiquement à chaque ouverture de terminal
-echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc   # ou foxy
 echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
