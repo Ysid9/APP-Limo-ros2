@@ -5,6 +5,10 @@ Branche `mecanum` — robot mecanum (4 roues holonomes), réseau à 3 sorties
 
 ## En simulation (Gazebo)
 
+⚠️ Pas de modèle Gazebo officiel pour le mecanum — la simulation n'est pas
+possible actuellement pour ce mode, voir directement "Sur robot réel"
+ci-dessous.
+
 **Terminal 1 — lancer Gazebo en mode mecanum :**
 ```bash
 source /opt/ros/humble/setup.bash   # ou foxy
