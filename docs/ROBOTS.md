@@ -81,14 +81,3 @@ ros2 launch limo_base limo_base.launch.py use_mcnamu:=true
 ```
 Voir `limo_driver.cpp::enableMcMode()`, qui envoie une trame de config au
 MCU pour basculer le mode moteur au démarrage du nœud.
-
-## Pièges connus (déjà rencontrés, déjà corrigés dans le code, pour info)
-
-- Le driver (`limo_driver.cpp`, code fournisseur AgileX) avait un bug
-  d'initialisation du cap odométrique (`real_theta_`) qui rendait
-  l'odométrie incohérente au démarrage sur certaines machines selon ce qui
-  traînait en mémoire. Corrigé (voir historique git, commit "Fix odometry
-  heading bugs in limo_driver.cpp").
-- `tf2_geometry_msgs` : le header s'appelle `.hpp` sous Humble, `.h` sous
-  Foxy. Le driver utilise `__has_include` pour supporter les deux
-  distributions avec le même code source.
