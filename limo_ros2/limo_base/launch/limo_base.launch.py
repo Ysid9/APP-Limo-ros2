@@ -10,26 +10,26 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    port_name_arg = DeclareLaunchArgument('port_name', default_value='ttyUSB1',
-                                         description='usb bus name, e.g. ttyUSB1')
-    odom_frame_arg = DeclareLaunchArgument('odom_frame', default_value='odom',
+    port_name_launch_arg = DeclareLaunchArgument('port_name', default_value='ttylimo',
+                                         description='usb bus name, e.g. ttyUSB1 or ttylimo')
+    odom_frame_launch_arg = DeclareLaunchArgument('odom_frame', default_value='odom',
                                            description='Odometry frame id')
-    base_link_frame_arg = DeclareLaunchArgument('base_frame', default_value='base_link',
+    base_link_frame_launch_arg = DeclareLaunchArgument('base_frame', default_value='base_link',
                                                 description='Base link frame id')
     odom_topic_arg = DeclareLaunchArgument('odom_topic_name', default_value='odom',
                                            description='Odometry topic name')
-    use_mcnamu_arg = DeclareLaunchArgument('use_mcnamu', default_value='false',
+    use_mcnamu_launch_arg = DeclareLaunchArgument('use_mcnamu', default_value='false',
                                            description='Switch the vehicle to mecanum mode')
     #sim_control_rate_arg = DeclareLaunchArgument('control_rate', default_value='50',
     #                                             description='Simulation control loop update rate')
     # pub_odom_tf_arg = DeclareLaunchArgument('pub_odom_tf', default_value='false',
     #                                              description='Odometry TF')
-    
-    port_name_arg = LaunchConfiguration('port_name',default='ttylimo')
-    odom_frame_arg = LaunchConfiguration('odom_frame',default='odom')
-    base_link_frame_arg = LaunchConfiguration('base_frame',default='base_link')
+
+    port_name_arg = LaunchConfiguration('port_name')
+    odom_frame_arg = LaunchConfiguration('odom_frame')
+    base_link_frame_arg = LaunchConfiguration('base_frame')
     pub_odom_tf_arg_ = LaunchConfiguration('pub_odom_tf', default='true')
-    use_mcnamu_arg_ = LaunchConfiguration('use_mcnamu', default='false')
+    use_mcnamu_arg_ = LaunchConfiguration('use_mcnamu')
 
     remapping = [
                 ('odom', '/wheel/odom'),
@@ -42,7 +42,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[{
                 # 'use_sim_time': launch.substitutions.LaunchConfiguration('use_sim_time'),
-                'port_name': port_name_arg,                
+                'port_name': port_name_arg,
                 'odom_frame': odom_frame_arg,
                 'base_frame': base_link_frame_arg,
                 'pub_odom_tf': pub_odom_tf_arg_,
@@ -52,8 +52,11 @@ def generate_launch_description():
         )
 
     return LaunchDescription([
+        port_name_launch_arg,
+        odom_frame_launch_arg,
+        base_link_frame_launch_arg,
+        use_mcnamu_launch_arg,
         #DeclareLaunchArgument('pub_odom_tf',default_value=pub_odom_tf_arg_,description='TF'),
         limo_base_node
 
     ])
-
