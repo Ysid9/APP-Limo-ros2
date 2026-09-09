@@ -4,27 +4,22 @@ Deux robots Limo réels sur le réseau local, utilisateur `agilex`,
 **authentification par mot de passe uniquement** (pas de clé SSH configurée
 au moment de la rédaction, chaque `scp`/`ssh` redemande le mot de passe).
 
-| | `.111` | `.113` |
+| | LIMO | LIMO COBOT |
 |---|---|---|
 | IP | `192.168.1.111` | `192.168.1.113` |
 | Distribution ROS2 | Humble (sourcée directement dans `~/.bashrc`) | Foxy, **dual-boot ROS1/ROS2** : `~/.bashrc` demande "ros: noetic(1) foxy(2) ?" à l'ouverture de chaque terminal, choisir **2** |
 | Workspace ROS2 actif | `~/agilex_ws` | `~/limo_ros2_ws` (`~/agilex_ws` sur cette machine est un workspace **ROS1** différent, paquet `limo_ros`, pas `limo_ros2` ; ne pas confondre) |
 | Scripts Python (mecanum) | `~/mecanum_torch` | `~/mecanum_torch` |
 | Scripts Python (diff) | `~/Downloads/APP-Limo_ros2_curr` | `~/Downloads/APP-Limo_ros2_curr` |
-| Port série MCU | `/dev/ttyUSB1` (CP2102, confirmé) | `/dev/ttyUSB0` (pas de `ttyUSB1` sur cette machine) |
+| Port série MCU | `/dev/ttylimo` (lien udev persistant) | `/dev/ttylimo` (lien udev persistant) |
 
 Chaque robot n'a que ces emplacements-là pour le code, pas de copies
 parallèles/obsolètes à ce jour (nettoyage fait en 2026-09).
 
-Le port série par défaut de `limo_base.launch.py` est `ttyUSB1`. Ça
-fonctionne tel quel sur `.111`, mais sur `.113` il faut le préciser
-explicitement :
-```bash
-ros2 launch limo_base limo_base.launch.py port_name:=ttyUSB0
-```
-Sur `.111`, un lien symbolique udev persistant existe aussi :
-`/dev/ttylimo` (basé sur l'identité USB du CP2102, stable même si
-l'énumération `ttyUSBx` change) ; `port_name:=ttylimo` fonctionne également.
+Le port série par défaut de `limo_base.launch.py` est `ttylimo`, un lien
+symbolique udev qui pointe vers le bon périphérique physique sur chaque
+robot. Il fonctionne tel quel sur les deux robots, pas besoin de préciser
+`port_name` au lancement.
 
 PC de développement : `cerv@192.168.1.241`. Les résultats de session
 (`res/robot/run_.../`) restent en local sur la machine qui a lancé le
@@ -50,10 +45,10 @@ scp -r agilex@192.168.1.111:~/mecanum_torch/res/robot/run_XXXX ./
    ```
 4. Reconstruire sur le robot, après avoir sourcé la bonne distribution ROS2 :
    ```bash
-   # .111 (Humble)
+   # LIMO (Humble)
    ssh agilex@192.168.1.111 "source /opt/ros/humble/setup.bash && cd ~/agilex_ws && colcon build --packages-select limo_base"
 
-   # .113 (Foxy)
+   # LIMO COBOT (Foxy)
    ssh agilex@192.168.1.113 "source /opt/ros/foxy/setup.bash && cd ~/limo_ros2_ws && colcon build --packages-select limo_base"
    ```
 
@@ -71,6 +66,20 @@ Même principe, `scp` direct vers `~/mecanum_torch` ou
 `~/Downloads/APP-Limo_ros2_curr` selon la branche. Pas de compilation
 nécessaire, les changements sont actifs au prochain lancement du script.
 
+## Lancer le driver
+
+Le driver de base seul (`limo_base.launch.py`) gère odométrie et moteurs.
+Pour la version complète (driver de base + lidar + transformées
+statiques), la commande diffère selon le robot :
+
+```bash
+# LIMO
+ros2 launch limo_bringup limo_start.launch.py
+
+# LIMO COBOT
+ros2 launch limo_base limo_start.launch.py
+```
+
 ## Activer le mode mecanum sur un robot
 
 Le driver gère 3 modes (`MODE_FOUR_DIFF`, `MODE_ACKERMANN`, `MODE_MCNAMU`)
@@ -81,3 +90,13 @@ ros2 launch limo_base limo_base.launch.py use_mcnamu:=true
 ```
 Voir `limo_driver.cpp::enableMcMode()`, qui envoie une trame de config au
 MCU pour basculer le mode moteur au démarrage du nœud.
+
+## Configuration réseau sur LIMO COBOT
+
+LIMO COBOT fonctionne uniquement en découverte ROS2 locale
+(`ROS_LOCALHOST_ONLY=1`, déjà dans `~/.bashrc`) : une exposition au trafic
+réseau normal fait planter `limo_base` de façon intermittente (bug de
+parsing dans CycloneDDS, déclenché par un paquet de découverte d'un autre
+participant du réseau). Conséquence pratique : les scripts doivent tourner
+directement sur ce robot (via SSH), jamais depuis le PC à distance. LIMO
+n'a pas cette contrainte.
