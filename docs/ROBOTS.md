@@ -3,6 +3,8 @@
 Deux robots Limo réels sur le réseau local, utilisateur `agilex`,
 **authentification par mot de passe uniquement** (pas de clé SSH configurée
 au moment de la rédaction, chaque `scp`/`ssh` redemande le mot de passe).
+Mot de passe du robot : agx
+Mot de passe SSH/SCP : agx
 
 | | LIMO | LIMO COBOT |
 |---|---|---|
@@ -21,8 +23,7 @@ symbolique udev qui pointe vers le bon périphérique physique sur chaque
 robot. Il fonctionne tel quel sur les deux robots, pas besoin de préciser
 `port_name` au lancement.
 
-PC de développement : `cerv@192.168.1.241`. Les résultats de session
-(`res/robot/run_.../`) restent en local sur la machine qui a lancé le
+Les résultats de session (`res/robot/run_.../`) restent en local sur la machine qui a lancé le
 script, pas d'envoi automatique. Pour les récupérer manuellement :
 ```bash
 scp -r agilex@192.168.1.111:~/mecanum_torch/res/robot/run_XXXX ./
@@ -90,6 +91,11 @@ ros2 launch limo_base limo_base.launch.py use_mcnamu:=true
 ```
 Voir `limo_driver.cpp::enableMcMode()`, qui envoie une trame de config au
 MCU pour basculer le mode moteur au démarrage du nœud.
+
+
+## Activer le mode ackermann sur un robot
+
+Pour cela il faut manipuler les deux verrous rouges sur le devant du robot. Les LEDs deviondront vert si le mode ackermann est bien activé.
 
 ## Configuration réseau sur LIMO COBOT
 
