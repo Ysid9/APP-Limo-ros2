@@ -1,7 +1,0 @@
-/home/cerv/Downloads/APP-Limo_ros2_diff/limo_ros2/limo_base/src/limo_driver.cpp: In member function ‘void AgileX::LimoDriver::parseFrame(const AgileX::LimoFrame&)’:
-/home/cerv/Downloads/APP-Limo_ros2_diff/limo_ros2/limo_base/src/limo_driver.cpp:301:21: warning: unused variable ‘left_wheel_odom’ [-Wunused-variable]
-  301 |             int32_t left_wheel_odom = (frame.data[3] & 0xff) | (frame.data[2] << 8) |
-      |                     ^~~~~~~~~~~~~~~
-/home/cerv/Downloads/APP-Limo_ros2_diff/limo_ros2/limo_base/src/limo_driver.cpp:303:21: warning: unused variable ‘right_wheel_odom’ [-Wunused-variable]
-  303 |             int32_t right_wheel_odom = (frame.data[7] & 0xff) | (frame.data[6] << 8) |
-      |                     ^~~~~~~~~~~~~~~~

@@ -6,3 +6,7 @@ res_monitoring/
 results/
 last_w_*.json
 weights_*.json
+build/
+install/
+log/
+
