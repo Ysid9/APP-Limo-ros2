@@ -25,8 +25,9 @@ change, c'est le nombre de sorties du réseau, la cinématique du robot dans
 ## Pour commencer
 
 1. [`INSTALL.md`](INSTALL.md) : installer l'environnement (ROS2, Gazebo, dépendances Python)
-2. [`TRAINING.md`](TRAINING.md) : lancer une session d'apprentissage/test, en simulation ou sur robot réel
-3. [`ROBOTS.md`](ROBOTS.md) : se connecter aux robots physiques et déployer une modification du driver
+2. [`DOCKER.md`](DOCKER.md) : alternative à l'installation manuelle, reproduire l'environnement de simulation dans un conteneur Docker
+3. [`TRAINING.md`](TRAINING.md) : lancer une session d'apprentissage/test, en simulation ou sur robot réel
+4. [`ROBOTS.md`](ROBOTS.md) : se connecter aux robots physiques et déployer une modification du driver
 
 ## Structure du dépôt
 

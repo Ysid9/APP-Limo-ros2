@@ -1,0 +1,11 @@
+# Versions exactes installées dans l'environnement de référence
+# (~/Bureau/venvRobot sur la machine de développement), pour reproduire
+# fidèlement les résultats numériques des sessions d'apprentissage.
+# CPU uniquement : le code (torch_back.py, torch_online.py, ...) n'appelle
+# jamais .cuda()/.to(device), un GPU n'apporterait aucun gain et forcerait
+# nvidia-container-toolkit sur toutes les machines de l'équipe.
+torch==2.5.1
+numpy==2.2.6
+matplotlib==3.10.8
+PyQt5==5.15.9
+plotly==6.8.0

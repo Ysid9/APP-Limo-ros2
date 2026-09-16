@@ -1,0 +1,88 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Release-6e9f2399e0e13cdb18c1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "limo_base",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "limo_base::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-limo_base-Release-0ac4fa4bed399a51a81f.json",
+					"name" : "limo_base",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "limo_base_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-limo_base_uninstall-Release-3c99413775fdba7c6078.json",
+					"name" : "limo_base_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tf_pub::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tf_pub-Release-cb9ea9f120238dff6d17.json",
+					"name" : "tf_pub",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Release-c5e784faaed0e0f30a27.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/cerv/Downloads/APP-Limo_ros2_diff/build/limo_base",
+		"source" : "/home/cerv/Downloads/APP-Limo_ros2_diff/limo_ros2/limo_base"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

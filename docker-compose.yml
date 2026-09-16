@@ -1,0 +1,17 @@
+services:
+  limo:
+    build: .
+    image: app-limo-diff:humble
+    container_name: app-limo-diff
+    stdin_open: true
+    tty: true
+    network_mode: host   # simplifies ROS2/DDS discovery between `docker exec` sessions
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./res:/root/app/res
+      # Uncomment to pass through the host GPU for hardware-accelerated
+      # Gazebo/RViz rendering (requires the device to exist on the host):
+      # - /dev/dri:/dev/dri

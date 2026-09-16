@@ -1,0 +1,12 @@
+build/
+install/
+log/
+res/
+res_log/
+res_monitoring/
+results/
+__pycache__/
+*.pyc
+last_w_*.json
+weights_*.json
+.git/
