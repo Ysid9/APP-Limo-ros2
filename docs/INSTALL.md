@@ -53,9 +53,11 @@ pip install torch matplotlib PyQt5
 ### 3. Workspace ROS2
 
 ```bash
-# crée le workspace ROS2 et y copie le paquet du dépôt
+# crée le workspace ROS2 et y lie le paquet du dépôt (lien symbolique,
+# pas une copie : toute modification ou git pull sur ce dépôt se
+# répercute immédiatement, sans jamais avoir à re-synchroniser)
 mkdir -p ~/ros2_ws/src
-cp -r /chemin/vers/ce/depot/limo_ros2 ~/ros2_ws/src/
+ln -s /chemin/vers/ce/depot/limo_ros2 ~/ros2_ws/src/limo_ros2
 
 # installe automatiquement les dépendances système déclarées par les
 # paquets ROS2 (tf2, turtlesim, xacro, rviz2, etc.), au cas où l'une
@@ -74,6 +76,20 @@ colcon build
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc   # ou foxy
 echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 source ~/.bashrc
+```
+
+⚠️ Après un `git checkout` vers une autre branche (`diff`/`mecanum`/`ackermann`)
+ou un `git pull`, il faut relancer `colcon build` (dans `~/ros2_ws`) pour que
+Gazebo utilise la version à jour — le lien symbolique met à jour le code
+source instantanément, mais pas le binaire compilé dans `install/`.
+
+⚠️ Si `colcon build` échoue sur `limo_msgs` avec une erreur
+`canonicalize_version() got an unexpected keyword argument
+'strip_trailing_zero'`, c'est un conflit entre setuptools et l'ancien
+module `packaging` du système. Corriger avec :
+```bash
+pip3 install "setuptools<66" --user
+colcon build --packages-select limo_msgs
 ```
 
 Ensuite, voir [`TRAINING.md`](TRAINING.md) pour lancer une session
